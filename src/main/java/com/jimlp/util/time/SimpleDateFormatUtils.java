@@ -39,16 +39,19 @@ public class SimpleDateFormatUtils {
      * @param pattern
      * @return
      */
-    public static SimpleDateFormat instanceSimpleDateFormat(final String pattern) {
+    private static SimpleDateFormat instanceSimpleDateFormat(final String pattern) {
         ThreadLocal<SimpleDateFormat> tl = sdfMap.get(pattern);
-        // 如果为空，进入同步锁创建sdf
         if (tl == null) {
             synchronized (LOCK) {
-                // 再次获取和判空避免了多线程并发时不必要地重复创建sdf
                 tl = sdfMap.get(pattern);
                 if (tl == null) {
-                    tl = new ThreadLocal<SimpleDateFormat>();
-                    tl.set(new SimpleDateFormat(pattern));
+                    tl = new ThreadLocal<SimpleDateFormat>() {
+                        @Override
+                        protected SimpleDateFormat initialValue() {
+                            System.out.println(pattern);
+                            return new SimpleDateFormat(pattern);
+                        }
+                    };
                     sdfMap.put(pattern, tl);
                 }
             }
@@ -64,7 +67,20 @@ public class SimpleDateFormatUtils {
      * @return
      */
     public static Date parse(String dateStr) {
-        SimpleDateFormat format = instanceSimpleDateFormat(DATE_TIME_FORMAT);
+        return parse(dateStr, DATE_TIME_FORMAT);
+    }
+
+    /**
+     * 将日期字符串转换为 {@link Date}。
+     * 
+     * @param dateStr
+     *            时间字符串
+     * @param pattern
+     *            时间字符串的模板
+     * @return
+     */
+    public static Date parse(String dateStr, String pattern) {
+        SimpleDateFormat format = instanceSimpleDateFormat(pattern);
         try {
             return format.parse(dateStr);
         } catch (ParseException e) {
@@ -79,12 +95,11 @@ public class SimpleDateFormatUtils {
      * @return
      */
     public static String format(Date date) {
-        SimpleDateFormat format = instanceSimpleDateFormat(DATE_TIME_FORMAT);
-        return format.format(date);
+        return format(date, DATE_TIME_FORMAT);
     }
 
     /**
-     * 对日期进行字符串格式化，采用指定的格式。
+     * 对日期进行字符串格式化，采用指定的模板格式。
      * 
      * @param date
      * @param pattern

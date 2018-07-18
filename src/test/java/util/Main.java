@@ -1,14 +1,14 @@
 package util;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Random;
 
 import org.dom4j.DocumentException;
 
@@ -18,14 +18,14 @@ import com.jimlp.pay.weixin.sdk.WXPayUtil;
 import com.jimlp.util.ProjectUtils;
 import com.jimlp.util.StringUtils;
 import com.jimlp.util.file.PropertiesUtils;
-import com.jimlp.util.web.http.HttpUtils;
+import com.jimlp.util.time.SimpleDateFormatUtils;
 import com.jimlp.util.xml.XmlUtils;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        wxpay();
+        // wxpay();
         // 查询();
-        // pf();
+         多线程();
         // xml();
         // prop();
         // byteToHex();
@@ -70,17 +70,19 @@ public class Main {
         System.out.println(System.currentTimeMillis()-now);
     }
 
-    private static void pf() throws IOException {
-        int i = 500;
+    private static void 多线程() throws Exception {
+        int i = 10;
         Thread[] ts = new Thread[i];
-        while (i-- >= 0) {
+        while (--i >= 0) {
             Thread t = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        HttpUtils.doGet("http://localhost/t1?name=a");
-                    } catch (IOException e) {
-                        //e.printStackTrace();
+                        System.out.println(SimpleDateFormatUtils.parse("2018-07-11 12:55:55"));
+                        System.out.println(SimpleDateFormatUtils.parse("2018-07-11 12:55:55"));
+                        System.out.println(SimpleDateFormatUtils.parse("2018-07-11 12:55:55"));
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }
             });
@@ -88,7 +90,6 @@ public class Main {
         }
         for (int j = 0, l = ts.length; j < l; j++) {
             ts[j].start();
-            System.out.println(j);
         }
     }
 }
