@@ -94,7 +94,7 @@ public final class IpUtils {
      * @return IpInfo IPv4信息<br>
      */
     public static IpInfo getIpInfo(String ip) {
-        if (isValidIP(ip)) {
+        if (!isValidIP(ip)) {
             throw new IllegalArgumentException("Not a valid ip:" + ip);
         }
         String url = "http://whois.pconline.com.cn/ipJson.jsp";
