@@ -48,7 +48,6 @@ public class SimpleDateFormatUtils {
                     tl = new ThreadLocal<SimpleDateFormat>() {
                         @Override
                         protected SimpleDateFormat initialValue() {
-                            System.out.println(pattern);
                             return new SimpleDateFormat(pattern);
                         }
                     };

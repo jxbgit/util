@@ -3,12 +3,14 @@ package util;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Random;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.dom4j.DocumentException;
 
@@ -18,7 +20,6 @@ import com.jimlp.pay.weixin.sdk.WXPayUtil;
 import com.jimlp.util.ProjectUtils;
 import com.jimlp.util.StringUtils;
 import com.jimlp.util.file.PropertiesUtils;
-import com.jimlp.util.time.SimpleDateFormatUtils;
 import com.jimlp.util.xml.XmlUtils;
 
 public class Main {
@@ -70,7 +71,12 @@ public class Main {
         System.out.println(System.currentTimeMillis()-now);
     }
 
+    static volatile int tempInt = 0;
+    static AtomicInteger ai = new AtomicInteger(0);
     private static void 多线程() throws Exception {
+        Map<String, String> map = new HashMap<>();
+         final Map<String, Long> PAYING_ORDER_TEMP = new Hashtable<>();
+         final Map<String, String> OPENID_USERID = new Hashtable<>();
         int i = 10;
         Thread[] ts = new Thread[i];
         while (--i >= 0) {
@@ -78,9 +84,22 @@ public class Main {
                 @Override
                 public void run() {
                     try {
-                        System.out.println(SimpleDateFormatUtils.parse("2018-07-11 12:55:55"));
-                        System.out.println(SimpleDateFormatUtils.parse("2018-07-11 12:55:55"));
-                        System.out.println(SimpleDateFormatUtils.parse("2018-07-11 12:55:55"));
+                        long now = System.currentTimeMillis();
+                        for(int i = 0 ;i<1000;i++){
+                            //new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("2018-07-11 12:55:55");
+                            //SimpleDateFormatUtils.parse("2018-07-11 12:55:55");
+//                            WXPayUtil.generateNonceStr();
+//                            map.put(Thread.currentThread().getName()+i, "a");
+//                            tempInt++;
+//                            ai.getAndAdd(1);
+                            PAYING_ORDER_TEMP.put(Thread.currentThread().getName()+i, 1L);
+                            OPENID_USERID.put(Thread.currentThread().getName()+i, "123a,"+now);
+                        }
+                        System.out.println(PAYING_ORDER_TEMP.size());
+//                        System.out.println(map.size());
+//                        System.out.println(System.currentTimeMillis()-now);
+                        System.out.println(tempInt);
+                        System.out.println(ai.get());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -91,5 +110,29 @@ public class Main {
         for (int j = 0, l = ts.length; j < l; j++) {
             ts[j].start();
         }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                long endTime = System.currentTimeMillis()-4*60*60*1000;
+                Entry<String, Long>[] arr = new Entry[0];
+                arr = PAYING_ORDER_TEMP.entrySet().toArray(arr);
+                long createTime = 0;
+                for (Entry<String, Long> entry : arr){
+                    createTime = entry.getValue();
+                    if(createTime<endTime){
+                        PAYING_ORDER_TEMP.remove(entry.getKey());
+                    }
+                }
+                
+                Entry<String, String>[] arr2 = new Entry[0];
+                arr2 = OPENID_USERID.entrySet().toArray(arr2);
+                for (Entry<String, String> entry : arr2){
+                    createTime = Long.parseLong(entry.getValue().split(",")[1]);
+                    if(createTime<endTime){
+                        OPENID_USERID.remove(entry.getKey());
+                    }
+                }
+            }
+        }).start();
     }
 }
