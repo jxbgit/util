@@ -33,22 +33,6 @@ public final class FileUtils {
 	 * @return
 	 */
 	public static String readToString(String srcFileName) throws IOException {
-		return readToString(srcFileName, null);
-	}
-
-	/**
-	 * 以字符串形式输出文件内容
-	 * 
-	 * @param srcFileName
-	 *            源文件
-	 * @param charset
-	 *            编码格式
-	 * @throws IOException
-	 *             当文件长度大于 2147483647 字节时或者出现系统I/O异常
-	 * 
-	 * @return
-	 */
-	public static String readToString(String srcFileName, String charset) throws IOException {
 		File f = new File(srcFileName);
 		FileInputStream fis = null;
 		try {
@@ -59,10 +43,7 @@ public final class FileUtils {
 			}
 			byte[] bs = new byte[(int) f.length()];
 			fis.read(bs);
-			if(charset == null){
-				return new String(bs);
-			}
-			return new String(bs, charset);
+			return new String(bs, getFileEncode(f));
 		} catch (IOException e) {
 			throw e;
 		} finally {
