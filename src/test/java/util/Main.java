@@ -67,7 +67,7 @@ public class Main {
         LinkedHashMap<String, String> params = new LinkedHashMap<>();
         params.put("#info", "ads");
         params.put("info", null);
-        params.put("#info3", "da78");
+        params.put("#info3", "按段");
         params.put("info3", "dasasdd");
         PropertiesUtils.setValue(file, params, true);
     }

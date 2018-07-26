@@ -41,7 +41,7 @@ public class PropertiesUtils {
     public static boolean setValue(File file, LinkedHashMap<String, String> params, boolean append) throws IOException {
         @SuppressWarnings("unchecked")
         HashMap<String, String> _params = (HashMap<String, String>) params.clone();
-        BufferedReader bufReader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));// 数据流读取文件
+        BufferedReader bufReader = new BufferedReader(new InputStreamReader(new FileInputStream(file), FileUtils.getFileEncode(file)));// 数据流读取文件
         StringBuffer strBuffer = new StringBuffer();
         String key = null;
         String noteKey = null;
@@ -185,7 +185,7 @@ public class PropertiesUtils {
                 }
             }
         }
-        PrintWriter printWriter = new PrintWriter(file);
+        PrintWriter printWriter = new PrintWriter(file, FileUtils.getFileEncode(file));
         printWriter.write(strBuffer.toString().toCharArray());
         printWriter.flush();
         printWriter.close();
