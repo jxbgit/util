@@ -6,14 +6,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 
 public class PropertiesUtils {
     /**
-     * 修改或添加 properties 文件中的属性。<br>
-     * 若文件中存在两个相同的键值，则只对第一个做修改。<br>
-     * 若文件中不存在 params 中键值，则将在文件末尾追加此键值。
+     * 修改 properties 配置文件中的属性值。
      * 
      * @param file
      *            指定要修改的配置文件
@@ -23,6 +22,25 @@ public class PropertiesUtils {
      * @throws IOException
      */
     public static boolean setValue(File file, LinkedHashMap<String, String> params) throws IOException {
+        return setValue(file, params, false);
+    }
+
+    /**
+     * 修改或添加 properties 配置文件中的属性值。<br>
+     * 若文件中不存在 params 中键值，则将在文件末尾追加此键值。
+     * 
+     * @param file
+     *            指定要修改的配置文件
+     * @param params
+     *            指定要修改的参数
+     * @param append
+     *            若原配置文件中不存在 params 中键值，是否将这些键值追加到配置文件末尾。
+     * @return 始终返回 true
+     * @throws IOException
+     */
+    public static boolean setValue(File file, LinkedHashMap<String, String> params, boolean append) throws IOException {
+        @SuppressWarnings("unchecked")
+        HashMap<String, String> _params = (HashMap<String, String>) params.clone();
         BufferedReader bufReader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));// 数据流读取文件
         StringBuffer strBuffer = new StringBuffer();
         String key = null;
@@ -56,19 +74,19 @@ public class PropertiesUtils {
             }
             char[] value = valTemp.toCharArray();
             for (int i = 0, l = value.length; i < l; i++) {
-                if (keyStart == -1 && value[i] == '#') {
-                    if (preNoteValTemp != null) {
-                        strBuffer.append(preNoteValTemp);
-                        strBuffer.append(System.getProperty("line.separator"));
-                        preNoteValTemp = valTemp;
-                        continue next;
-                    }
-                    preNoteValTemp = valTemp;
-                    note = true;
-                    break;
-                }
                 if (keyStart == -1) {
-                    if (value[i] != ' ' && value[i] != '\t') {
+                    if (value[i] == '#' || value[i] == '!') {
+                        if (preNoteValTemp != null) {
+                            strBuffer.append(preNoteValTemp);
+                            strBuffer.append(System.getProperty("line.separator"));
+                            preNoteValTemp = valTemp;
+                            continue next;
+                        }
+                        preNoteValTemp = valTemp;
+                        note = true;
+                        break;
+                    }
+                    if (value[i] != ' ' && value[i] != '\t' && value[i] != '\f') {
                         keyStart = i;
                     }
                 } else if (keyEnd == -1) {
@@ -87,7 +105,7 @@ public class PropertiesUtils {
                         equalSign = i;
                     }
                 } else if (valStart == -1) {
-                    if (value[i] != ' ' && value[i] != '\t') {
+                    if (value[i] != ' ' && value[i] != '\t' && value[i] != '\f') {
                         valStart = i;
                     }
                 } else if (valEnd == -1) {
@@ -96,45 +114,75 @@ public class PropertiesUtils {
                     }
                 }
             }
+            if (!note && equalSign == -1) {
+                strBuffer.append(valTemp);
+                strBuffer.append(System.getProperty("line.separator"));
+                continue next;
+            }
+            if (valStart == -1) {
+                valStart = valEnd = equalSign + 1;
+            }
             if (!note) {
                 key = valTemp.substring(keyStart, keyEnd + 1);
                 noteKey = "#" + key;
-                if (preNoteValTemp != null) {
-                    if (params.containsKey(noteKey)) {
-                        preNoteValTemp = params.get(noteKey);
+                if (_params.containsKey(noteKey)) {
+                    params.remove(noteKey);
+                    preNoteValTemp = _params.get(noteKey);
+                    preNoteValTemp = preNoteValTemp == null ? "" : preNoteValTemp;
+                    preNoteValTemp = "#" + preNoteValTemp;
+                } else {
+                    noteKey = "!" + key;
+                    if (_params.containsKey(noteKey)) {
                         params.remove(noteKey);
-                        strBuffer.append('#');
+                        preNoteValTemp = _params.get(noteKey);
+                        preNoteValTemp = preNoteValTemp == null ? "" : preNoteValTemp;
+                        preNoteValTemp = "!" + preNoteValTemp;
                     }
+                }
+                if (preNoteValTemp != null) {
                     strBuffer.append(preNoteValTemp);
                     strBuffer.append(System.getProperty("line.separator"));
                 }
-                if (params.containsKey(key)) {
-                    strBuffer.append(valTemp.substring(0, valStart));
-                    valTemp = params.get(key);
+                if (_params.containsKey(key)) {
                     params.remove(key);
+                    strBuffer.append(valTemp.substring(0, valStart));
+                    valTemp = _params.get(key);
+                    valTemp = valTemp == null ? "" : valTemp;
                 }
                 preNoteValTemp = null;
                 strBuffer.append(valTemp);
                 strBuffer.append(System.getProperty("line.separator"));
             }
         }
+        if (preNoteValTemp != null) {
+            strBuffer.append(preNoteValTemp);
+            strBuffer.append(System.getProperty("line.separator"));
+        }
         try {
             bufReader.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if (params.size() > 0) {
+        if (append && params.size() > 0) {
             String _key = null;
             for (Entry<String, String> entry : params.entrySet()) {
                 _key = entry.getKey();
-                if (_key.startsWith("#")) {
-                    strBuffer.append('#');
-                } else {
+                if (_key == null || _key.trim().length() == 0) {
+                    continue;
+                }
+                if (!_key.startsWith("#") && !_key.startsWith("!")) {
+                    if (params.containsKey("#" + _key) || params.containsKey("!" + _key)) {
+                        strBuffer.append('#');
+                        String noteVal = params.get("#" + _key);
+                        noteVal = noteVal == null ? params.get("!" + _key) : noteVal;
+                        strBuffer.append(noteVal == null ? "" : noteVal);
+                        strBuffer.append(System.getProperty("line.separator"));
+                    }
                     strBuffer.append(_key);
                     strBuffer.append('=');
+                    strBuffer.append(entry.getValue());
+                    strBuffer.append(System.getProperty("line.separator"));
                 }
-                strBuffer.append(entry.getValue());
-                strBuffer.append(System.getProperty("line.separator"));
             }
         }
         PrintWriter printWriter = new PrintWriter(file);

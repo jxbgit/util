@@ -1,7 +1,9 @@
 package util;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -9,6 +11,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -24,24 +27,26 @@ import com.jimlp.util.xml.XmlUtils;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        // wxpay();
+//         wxpay();
         // 查询();
-         多线程();
+//         多线程();
         // xml();
-        // prop();
+         prop();
         // byteToHex();
     }
 
     private static void wxpay() throws Exception, IOException, UnsupportedEncodingException {
         Map<String, String> reqData = new HashMap<>();
         reqData.put("body", "TRT-test1");
-        reqData.put("out_trade_no", "1235");
-        //reqData.put("out_trade_no", "123123123"); 2018-07-11 13:00:00
+//        reqData.put("out_trade_no", "1236");
+        reqData.put("out_trade_no", "123123123");// 2018-07-11 13:00:00
         reqData.put("total_fee", "1");
         reqData.put("spbill_create_ip", "60.25.179.113");
         reqData.put("notify_url", "http://www.jimlp.com/t");
         reqData.put("trade_type", "NATIVE");
         reqData.put("attach", "attach");
+        reqData.put("time_start", "20180724101700");
+        reqData.put("time_expire", "20180724105500");
         //reqData.put("openid", openId);
         System.out.println(WXPayUtil.mapToXml(WXPay.instance().unifiedOrder(reqData)));
         System.out.println(WXPayUtil.mapToXml(reqData));
@@ -55,9 +60,16 @@ public class Main {
     }
 
     private static void prop() throws Exception {
-        File file = new File(ProjectUtils.getClassPath() + "config.properties");
+        File file = new File("C:\\Java\\workspace\\util\\src\\test\\resources\\config.properties");
+//        Properties p = new Properties();
+//        p.load(new FileInputStream(file));
+//        System.out.println(p);
         LinkedHashMap<String, String> params = new LinkedHashMap<>();
-        PropertiesUtils.setValue(file, params);
+        params.put("#info", "ads");
+        params.put("info", null);
+        params.put("#info3", "da78");
+        params.put("info3", "dasasdd");
+        PropertiesUtils.setValue(file, params, true);
     }
 
     private static void xml() throws DocumentException, UnsupportedEncodingException {
