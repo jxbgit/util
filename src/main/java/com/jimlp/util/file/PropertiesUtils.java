@@ -15,12 +15,18 @@ public class PropertiesUtils {
     private static final String SEPARATOR = System.getProperty("line.separator");
 
     /**
-     * 修改 properties 配置文件中的属性值。
+     * 修改或添加 properties 配置文件中的属性或注释。原内容格式保持不变<br>
      * 
      * @param file
      *            指定要修改的配置文件
      * @param params
-     *            指定要修改的参数
+     *            指定要修改的参数<br>
+     *            例如：<br>
+     *            #参数名=注释内容<br>
+     *            参数名=参数值<br>
+     *            将设置为：<br>
+     *            #注释内容<br>
+     *            参数名=参数值<br>
      * @return 始终返回 true
      * @throws IOException
      */
@@ -29,13 +35,19 @@ public class PropertiesUtils {
     }
 
     /**
-     * 修改或添加 properties 配置文件中的属性值。<br>
+     * 修改或添加 properties 配置文件中的属性或注释。原内容格式保持不变<br>
      * 若文件中不存在 params 中键值，则将在文件末尾追加此键值。
      * 
      * @param file
      *            指定要修改的配置文件
      * @param params
-     *            指定要修改的参数
+     *            指定要修改的参数<br>
+     *            例如：<br>
+     *            #参数名=注释内容<br>
+     *            参数名=参数值<br>
+     *            将设置为：<br>
+     *            #注释内容<br>
+     *            参数名=参数值<br>
      * @param append
      *            若原配置文件中不存在 params 中键值，是否将这些键值追加到配置文件末尾。
      * @return 始终返回 true
