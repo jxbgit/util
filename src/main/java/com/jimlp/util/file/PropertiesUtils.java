@@ -11,6 +11,9 @@ import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 
 public class PropertiesUtils {
+    // 当前系统换行符
+    private static final String SEPARATOR = System.getProperty("line.separator");
+
     /**
      * 修改 properties 配置文件中的属性值。
      * 
@@ -66,10 +69,10 @@ public class PropertiesUtils {
             if (valTemp.trim().length() == 0) {
                 if (preNoteValTemp != null) {
                     strBuffer.append(preNoteValTemp);
-                    strBuffer.append(System.getProperty("line.separator"));
+                    strBuffer.append(SEPARATOR);
                     preNoteValTemp = null;
                 }
-                strBuffer.append(System.getProperty("line.separator"));
+                strBuffer.append(SEPARATOR);
                 continue next;
             }
             char[] value = valTemp.toCharArray();
@@ -78,7 +81,7 @@ public class PropertiesUtils {
                     if (value[i] == '#' || value[i] == '!') {
                         if (preNoteValTemp != null) {
                             strBuffer.append(preNoteValTemp);
-                            strBuffer.append(System.getProperty("line.separator"));
+                            strBuffer.append(SEPARATOR);
                             preNoteValTemp = valTemp;
                             continue next;
                         }
@@ -116,7 +119,7 @@ public class PropertiesUtils {
             }
             if (!note && equalSign == -1) {
                 strBuffer.append(valTemp);
-                strBuffer.append(System.getProperty("line.separator"));
+                strBuffer.append(SEPARATOR);
                 continue next;
             }
             if (valStart == -1) {
@@ -141,7 +144,7 @@ public class PropertiesUtils {
                 }
                 if (preNoteValTemp != null) {
                     strBuffer.append(preNoteValTemp);
-                    strBuffer.append(System.getProperty("line.separator"));
+                    strBuffer.append(SEPARATOR);
                 }
                 if (_params.containsKey(key)) {
                     params.remove(key);
@@ -151,12 +154,12 @@ public class PropertiesUtils {
                 }
                 preNoteValTemp = null;
                 strBuffer.append(valTemp);
-                strBuffer.append(System.getProperty("line.separator"));
+                strBuffer.append(SEPARATOR);
             }
         }
         if (preNoteValTemp != null) {
             strBuffer.append(preNoteValTemp);
-            strBuffer.append(System.getProperty("line.separator"));
+            strBuffer.append(SEPARATOR);
         }
         try {
             bufReader.close();
@@ -176,12 +179,12 @@ public class PropertiesUtils {
                         String noteVal = params.get("#" + _key);
                         noteVal = noteVal == null ? params.get("!" + _key) : noteVal;
                         strBuffer.append(noteVal == null ? "" : noteVal);
-                        strBuffer.append(System.getProperty("line.separator"));
+                        strBuffer.append(SEPARATOR);
                     }
                     strBuffer.append(_key);
                     strBuffer.append('=');
                     strBuffer.append(entry.getValue());
-                    strBuffer.append(System.getProperty("line.separator"));
+                    strBuffer.append(SEPARATOR);
                 }
             }
         }
