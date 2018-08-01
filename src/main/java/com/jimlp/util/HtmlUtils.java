@@ -274,7 +274,6 @@ public class HtmlUtils {
 			imgTagRegex += ")";
 		}
 		imgTagRegex += "[^\".]*\\.[a-zA-Z]+";
-		System.out.println(imgTagRegex);
 		Pattern imgTagPattern = Pattern.compile(imgTagRegex, Pattern.CASE_INSENSITIVE);
 		List<String> list = new ArrayList<String>();
 		Matcher matcher = imgTagPattern.matcher(html);
@@ -305,7 +304,6 @@ public class HtmlUtils {
 			imgTagRegex += ")";
 		}
 		imgTagRegex += "[^\".]*\\.[a-zA-Z]+";
-		System.out.println(imgTagRegex);
 		Pattern imgTagPattern = Pattern.compile(imgTagRegex, Pattern.CASE_INSENSITIVE);
 		List<String> list = new ArrayList<String>();
 		Matcher matcher = imgTagPattern.matcher(html);
