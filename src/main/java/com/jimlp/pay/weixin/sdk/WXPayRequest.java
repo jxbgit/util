@@ -19,8 +19,6 @@ import org.apache.http.util.EntityUtils;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 
-import static com.jimlp.pay.weixin.sdk.WXPayConstants.USER_AGENT;
-
 import java.io.InputStream;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
@@ -45,12 +43,12 @@ public class WXPayRequest {
      * @return
      * @throws Exception
      */
-    private static String requestOnce(final String domain, String urlSuffix, String uuid, String data, int connectTimeoutMs, int readTimeoutMs, boolean useCert) throws Exception {
+    private static String requestOnce(final String domain, String urlSuffix, String uuid, String data, int connectTimeoutMs, int readTimeoutMs, boolean useCert, WXPayConfig config) throws Exception {
         BasicHttpClientConnectionManager connManager;
         if (useCert) {
             // 证书
-            char[] password = WXPayConfig.getMchID().toCharArray();
-            InputStream certStream = WXPayConfig.getCertStream();
+            char[] password = config.getMchID().toCharArray();
+            InputStream certStream = config.getCertStream();
             KeyStore ks = KeyStore.getInstance("PKCS12");
             ks.load(certStream, password);
 
@@ -79,7 +77,7 @@ public class WXPayRequest {
 
         StringEntity postEntity = new StringEntity(data, "UTF-8");
         httpPost.addHeader("Content-Type", "text/xml");
-        httpPost.addHeader("User-Agent", USER_AGENT);
+        httpPost.addHeader("User-Agent", WXPayConstants.USER_AGENT);
         httpPost.setEntity(postEntity);
 
         HttpResponse httpResponse = httpClient.execute(httpPost);
@@ -87,14 +85,14 @@ public class WXPayRequest {
         return EntityUtils.toString(httpEntity, "UTF-8");
     }
 
-    private static String request(String urlSuffix, String uuid, String data, int connectTimeoutMs, int readTimeoutMs, boolean useCert) throws Exception {
+    private static String request(String urlSuffix, String uuid, String data, int connectTimeoutMs, int readTimeoutMs, boolean useCert, WXPayConfig config) throws Exception {
         WXPayDomain.DomainInfo domainInfo = WXPayDomain.getDomain();
         if (domainInfo == null) {
             throw new Exception("WXPayConfig.getWXPayDomain().getDomain() is empty or null");
         }
         Exception exception = null;
         try {
-            return requestOnce(domainInfo.domain, urlSuffix, uuid, data, connectTimeoutMs, readTimeoutMs, useCert);
+            return requestOnce(domainInfo.domain, urlSuffix, uuid, data, connectTimeoutMs, readTimeoutMs, useCert, config);
         } catch (UnknownHostException ex) { // dns 解析错误，或域名不存在
             exception = ex;
         } catch (ConnectTimeoutException ex) {
@@ -116,8 +114,8 @@ public class WXPayRequest {
      * @param data
      * @return
      */
-    public static String requestWithoutCert(String urlSuffix, String uuid, String data) throws Exception {
-        return request(urlSuffix, uuid, data, WXPayConfig.getHttpConnectTimeoutMs(), WXPayConfig.getHttpReadTimeoutMs(), false);
+    public static String requestWithoutCert(String urlSuffix, String uuid, String data, WXPayConfig config) throws Exception {
+        return request(urlSuffix, uuid, data, config.getHttpConnectTimeoutMs(), config.getHttpReadTimeoutMs(), false, config);
     }
 
     /**
@@ -130,8 +128,8 @@ public class WXPayRequest {
      * @param readTimeoutMs
      * @return
      */
-    public static String requestWithoutCert(String urlSuffix, String uuid, String data, int connectTimeoutMs, int readTimeoutMs) throws Exception {
-        return request(urlSuffix, uuid, data, connectTimeoutMs, readTimeoutMs, false);
+    public static String requestWithoutCert(String urlSuffix, String uuid, String data, int connectTimeoutMs, int readTimeoutMs, WXPayConfig config) throws Exception {
+        return request(urlSuffix, uuid, data, connectTimeoutMs, readTimeoutMs, false, config);
     }
 
     /**
@@ -142,8 +140,8 @@ public class WXPayRequest {
      * @param data
      * @return
      */
-    public static String requestWithCert(String urlSuffix, String uuid, String data) throws Exception {
-        return request(urlSuffix, uuid, data, WXPayConfig.getHttpConnectTimeoutMs(), WXPayConfig.getHttpReadTimeoutMs(), true);
+    public static String requestWithCert(String urlSuffix, String uuid, String data, WXPayConfig config) throws Exception {
+        return request(urlSuffix, uuid, data, config.getHttpConnectTimeoutMs(), config.getHttpReadTimeoutMs(), true, config);
     }
 
     /**
@@ -156,7 +154,7 @@ public class WXPayRequest {
      * @param readTimeoutMs
      * @return
      */
-    public static String requestWithCert(String urlSuffix, String uuid, String data, int connectTimeoutMs, int readTimeoutMs) throws Exception {
-        return request(urlSuffix, uuid, data, connectTimeoutMs, readTimeoutMs, true);
+    public static String requestWithCert(String urlSuffix, String uuid, String data, int connectTimeoutMs, int readTimeoutMs, WXPayConfig config) throws Exception {
+        return request(urlSuffix, uuid, data, connectTimeoutMs, readTimeoutMs, true, config);
     }
 }

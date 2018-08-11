@@ -6,15 +6,33 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class WXPayConfig {
+public abstract class WXPayConfig {
 
     private static byte[] certData;
 
-    static {
+    public abstract String getAppID();
+
+    public abstract String getMchID();
+
+    public abstract String getKey();
+
+    public abstract String getCertAbsolutePath();
+
+    public int getHttpConnectTimeoutMs() {
+        return 30000;
+    }
+
+    public int getHttpReadTimeoutMs() {
+        return 30000;
+    }
+
+    public final InputStream getCertStream() {
+        if (certData != null) {
+            return new ByteArrayInputStream(certData);
+        }
         InputStream certStream = null;
         try {
-            // TODO
-            String certPath = WXPayConfig.class.getResource("/").getPath() + "config/apiclient_cert.p12";
+            String certPath = getCertAbsolutePath();
             File file = new File(certPath);
             certStream = new FileInputStream(file);
             certData = new byte[(int) file.length()];
@@ -30,35 +48,6 @@ public class WXPayConfig {
                 }
             }
         }
-    }
-
-    public static String getAppID() {
-        // TODO
-        return "";
-    }
-
-    public static String getMchID() {
-        // TODO
-        return "";
-    }
-
-    public static String getKey() {
-        // TODO
-        return "";
-    }
-
-    
-    public static int getHttpConnectTimeoutMs() {
-        return 30000;
-    }
-    
-    public static int getHttpReadTimeoutMs() {
-        return 30000;
-    }
-    
-    public static InputStream getCertStream() {
-        ByteArrayInputStream certBis;
-        certBis = new ByteArrayInputStream(certData);
-        return certBis;
+        return new ByteArrayInputStream(certData);
     }
 }

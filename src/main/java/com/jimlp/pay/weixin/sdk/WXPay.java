@@ -1,17 +1,16 @@
 package com.jimlp.pay.weixin.sdk;
 
-import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.jimlp.util.io.InputStreamUtils;
-import com.jimlp.util.xml.XmlUtils;
-
 public class WXPay {
-
+    private WXPayConfig config;
     private boolean useSandbox = false;
     private static final WXPay WXPAY = new WXPay();
     private static WXPay sandboxWxPay;
@@ -24,7 +23,8 @@ public class WXPay {
      * 
      * @return
      */
-    public static WXPay instance() {
+    public static WXPay instance(WXPayConfig config) {
+        WXPAY.config = config;
         return WXPAY;
     }
 
@@ -33,7 +33,7 @@ public class WXPay {
      * 
      * @return
      */
-    public static WXPay instanceSandbox() {
+    public static WXPay instanceSandbox(WXPayConfig config) {
         if (sandboxWxPay == null) {
             synchronized (WXPAY) {
                 if (sandboxWxPay == null) {
@@ -42,6 +42,7 @@ public class WXPay {
                 }
             }
         }
+        sandboxWxPay.config = config;
         return sandboxWxPay;
     }
 
@@ -59,7 +60,7 @@ public class WXPay {
         String msgUUID = reqData.get("nonce_str");
         String reqBody = WXPayUtil.mapToXml(reqData);
 
-        String resp = WXPayRequest.requestWithoutCert(urlSuffix, msgUUID, reqBody, WXPayConfig.getHttpConnectTimeoutMs(), WXPayConfig.getHttpReadTimeoutMs());
+        String resp = WXPayRequest.requestWithoutCert(urlSuffix, msgUUID, reqBody, config.getHttpConnectTimeoutMs(), config.getHttpReadTimeoutMs(), config);
         return resp;
     }
 
@@ -77,7 +78,7 @@ public class WXPay {
         String msgUUID = reqData.get("nonce_str");
         String reqBody = WXPayUtil.mapToXml(reqData);
 
-        String resp = WXPayRequest.requestWithCert(urlSuffix, msgUUID, reqBody, WXPayConfig.getHttpConnectTimeoutMs(), WXPayConfig.getHttpReadTimeoutMs());
+        String resp = WXPayRequest.requestWithCert(urlSuffix, msgUUID, reqBody, config.getHttpConnectTimeoutMs(), config.getHttpReadTimeoutMs(), config);
         return resp;
     }
 
@@ -102,7 +103,7 @@ public class WXPay {
         if (return_code.equals(WXPayConstants.FAIL)) {
             return respData;
         } else if (return_code.equals(WXPayConstants.SUCCESS)) {
-            if (WXPayUtil.isSignatureValid(respData)) {
+            if (WXPayUtil.isSignatureValid(respData, config)) {
                 return respData;
             } else {
                 throw new Exception(String.format("Invalid sign value in XML: %s", xmlStr));
@@ -128,7 +129,7 @@ public class WXPay {
         } else {
             url = WXPayConstants.MICROPAY_URL_SUFFIX;
         }
-        String respXml = this.requestWithoutCert(url, WXPayUtil.fillRequestData(reqData));
+        String respXml = this.requestWithoutCert(url, WXPayUtil.fillRequestData(reqData, config));
         return this.processResponseXml(respXml);
     }
 
@@ -141,7 +142,7 @@ public class WXPay {
      * @throws Exception
      */
     public Map<String, String> microPayWithPos(Map<String, String> reqData) throws Exception {
-        int connectTimeoutMs = WXPayConfig.getHttpConnectTimeoutMs();
+        int connectTimeoutMs = config.getHttpConnectTimeoutMs();
         int remainingTimeMs = 60 * 1000;
         long startTimestampMs = 0;
         Map<String, String> lastResult = null;
@@ -166,7 +167,6 @@ public class WXPay {
                                 if (remainingTimeMs <= 100) {
                                     break;
                                 } else {
-                                    WXPayUtil.getLogger().info("microPayWithPos: try micropay again");
                                     if (remainingTimeMs > 5 * 1000) {
                                         Thread.sleep(5 * 1000);
                                     } else {
@@ -213,7 +213,7 @@ public class WXPay {
         } else {
             url = WXPayConstants.UNIFIEDORDER_URL_SUFFIX;
         }
-        String respXml = this.requestWithoutCert(url, WXPayUtil.fillRequestData(reqData));
+        String respXml = this.requestWithoutCert(url, WXPayUtil.fillRequestData(reqData, config));
         return this.processResponseXml(respXml);
     }
 
@@ -233,7 +233,7 @@ public class WXPay {
         } else {
             url = WXPayConstants.ORDERQUERY_URL_SUFFIX;
         }
-        String respXml = this.requestWithoutCert(url, WXPayUtil.fillRequestData(reqData));
+        String respXml = this.requestWithoutCert(url, WXPayUtil.fillRequestData(reqData, config));
         return this.processResponseXml(respXml);
     }
 
@@ -254,7 +254,7 @@ public class WXPay {
         } else {
             url = WXPayConstants.REVERSE_URL_SUFFIX;
         }
-        String respXml = this.requestWithCert(url, WXPayUtil.fillRequestData(reqData));
+        String respXml = this.requestWithCert(url, WXPayUtil.fillRequestData(reqData, config));
         return this.processResponseXml(respXml);
     }
 
@@ -264,10 +264,6 @@ public class WXPay {
      * 
      * @param reqData
      *            向wxpay post的请求数据
-     * @param connectTimeoutMs
-     *            连接超时时间，单位是毫秒
-     * @param readTimeoutMs
-     *            读超时时间，单位是毫秒
      * @return API返回数据
      * @throws Exception
      */
@@ -278,7 +274,7 @@ public class WXPay {
         } else {
             url = WXPayConstants.CLOSEORDER_URL_SUFFIX;
         }
-        String respXml = this.requestWithoutCert(url, WXPayUtil.fillRequestData(reqData));
+        String respXml = this.requestWithoutCert(url, WXPayUtil.fillRequestData(reqData, config));
         return this.processResponseXml(respXml);
     }
 
@@ -299,7 +295,7 @@ public class WXPay {
         } else {
             url = WXPayConstants.REFUND_URL_SUFFIX;
         }
-        String respXml = this.requestWithCert(url, WXPayUtil.fillRequestData(reqData));
+        String respXml = this.requestWithCert(url, WXPayUtil.fillRequestData(reqData, config));
         return this.processResponseXml(respXml);
     }
 
@@ -319,19 +315,18 @@ public class WXPay {
         } else {
             url = WXPayConstants.REFUNDQUERY_URL_SUFFIX;
         }
-        String respXml = this.requestWithoutCert(url, WXPayUtil.fillRequestData(reqData));
+        String respXml = this.requestWithoutCert(url, WXPayUtil.fillRequestData(reqData, config));
         return this.processResponseXml(respXml);
     }
 
     /**
      * 作用：对账单下载<br>
      * 场景：刷卡支付、公共号支付、扫码支付、APP支付<br>
-     * 其他：无论是否成功都返回Map。若成功，返回的Map中含有return_code、return_msg、data，
-     * 其中return_code为`SUCCESS`，data为对账单数据。
      * 
      * @param reqData
      *            向wxpay post的请求数据
-     * @return 经过封装的API返回数据
+     * @return 经过封装的API返回数据。返回字段包括return_code、return_msg，
+     *         若return_code为SUCCESS时还包括data（对账单数据，数据格式详见微信官方文档）
      * @throws Exception
      */
     public Map<String, String> downloadBill(Map<String, String> reqData) throws Exception {
@@ -341,7 +336,7 @@ public class WXPay {
         } else {
             url = WXPayConstants.DOWNLOADBILL_URL_SUFFIX;
         }
-        String respStr = this.requestWithoutCert(url, WXPayUtil.fillRequestData(reqData)).trim();
+        String respStr = this.requestWithoutCert(url, WXPayUtil.fillRequestData(reqData, config)).trim();
         Map<String, String> ret;
         // 出现错误，返回XML数据
         if (respStr.indexOf("<") == 0) {
@@ -350,7 +345,7 @@ public class WXPay {
             // 正常返回csv数据
             ret = new HashMap<String, String>();
             ret.put("return_code", WXPayConstants.SUCCESS);
-            ret.put("return_msg", "ok");
+            ret.put("return_msg", "OK");
             ret.put("data", respStr);
         }
         return ret;
@@ -372,7 +367,7 @@ public class WXPay {
         } else {
             url = WXPayConstants.SHORTURL_URL_SUFFIX;
         }
-        String respXml = this.requestWithoutCert(url, WXPayUtil.fillRequestData(reqData));
+        String respXml = this.requestWithoutCert(url, WXPayUtil.fillRequestData(reqData, config));
         return this.processResponseXml(respXml);
     }
 
@@ -392,10 +387,37 @@ public class WXPay {
         } else {
             url = WXPayConstants.AUTHCODETOOPENID_URL_SUFFIX;
         }
-        String respXml = this.requestWithoutCert(url, WXPayUtil.fillRequestData(reqData));
+        String respXml = this.requestWithoutCert(url, WXPayUtil.fillRequestData(reqData, config));
         return this.processResponseXml(respXml);
     }
 
+    /**
+     * 将输入流转字符串
+     * 
+     * @param stream
+     * @param charset
+     * @return
+     * @throws IOException
+     */
+    public static String inputStreamToString(InputStream stream, String charset) throws IOException {
+        try {
+            Reader reader = new InputStreamReader(stream, charset);
+            StringBuilder response = new StringBuilder();
+
+            final char[] buff = new char[1024];
+            int read = 0;
+            while ((read = reader.read(buff)) > 0) {
+                response.append(buff, 0, read);
+            }
+
+            return response.toString();
+        } finally {
+            if (stream != null) {
+                stream.close();
+            }
+        }
+    }
+    
     /**
      * 微信支付结果通知检查
      * 
@@ -409,9 +431,9 @@ public class WXPay {
         Map<String, String> rawMap = new HashMap<>();
         try {
             InputStream inStream = req.getInputStream();
-            xml = InputStreamUtils.inputStreamToString(inStream, "UTF-8");
+            xml = inputStreamToString(inStream, "UTF-8");
             rst.setRaw(xml);
-            rawMap = XmlUtils.simpleXmlToMapOnlyChild(new ByteArrayInputStream(xml.getBytes("UTF-8")), "UTF-8");
+            rawMap = WXPayUtil.xmlToMap(xml);
             rst.setRawMap(rawMap);
         } catch (Exception e) {
             rst.setCode(1);
@@ -432,7 +454,7 @@ public class WXPay {
         }
         // 检验签名
         try {
-            if (!WXPayUtil.isSignatureValid(rawMap)) {
+            if (!WXPayUtil.isSignatureValid(rawMap, config)) {
                 rst.setCode(4);
                 rst.setMsg("签名无效");
                 return rst;

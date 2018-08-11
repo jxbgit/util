@@ -41,7 +41,7 @@ public class WXPayConstants {
 
     public static final String FAIL     = "FAIL";
     public static final String SUCCESS  = "SUCCESS";
-    public static final String DEFAULT_SIGNTYPE = SignType.HMACSHA256.getName();
+    public static final String DEFAULT_SIGNTYPE = SignType.MD5.getName();
     public static final String HMACSHA256 = SignType.HMACSHA256.getName();
     public static final String MD5 = SignType.MD5.getName();
 
@@ -49,7 +49,7 @@ public class WXPayConstants {
     public static final String FIELD_SIGN_TYPE = "sign_type";
 
     public static final String WXPAYSDK_VERSION = "WXPaySDK/3.0.9";
-    public static final String USER_AGENT = WXPAYSDK_VERSION + " (" + System.getProperty("os.arch") + " " + System.getProperty("os.name") + " " + System.getProperty("os.version") + ") Java/" + System.getProperty("java.version") + " HttpClient/" + HttpClient.class.getPackage().getImplementationVersion() + " " + WXPayConfig.getMchID();
+    public static final String USER_AGENT = WXPAYSDK_VERSION + " (" + System.getProperty("os.arch") + " " + System.getProperty("os.name") + " " + System.getProperty("os.version") + ") Java/" + System.getProperty("java.version") + " HttpClient/" + HttpClient.class.getPackage().getImplementationVersion();
 
     public static final String MICROPAY_URL_SUFFIX     = "/pay/micropay";
     public static final String UNIFIEDORDER_URL_SUFFIX = "/pay/unifiedorder";

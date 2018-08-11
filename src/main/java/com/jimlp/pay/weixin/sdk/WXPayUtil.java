@@ -1,7 +1,5 @@
 package com.jimlp.pay.weixin.sdk;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -116,8 +114,8 @@ public class WXPayUtil {
      * @return 签名是否正确
      * @throws Exception
      */
-    public static boolean isSignatureValid(String xmlStr) throws Exception {
-        return isSignatureValid(xmlToMap(xmlStr));
+    public static boolean isSignatureValid(String xmlStr, WXPayConfig config) throws Exception {
+        return isSignatureValid(xmlToMap(xmlStr), config);
     }
 
     /**
@@ -128,25 +126,23 @@ public class WXPayUtil {
      * @return 签名是否正确
      * @throws Exception
      */
-    public static boolean isSignatureValid(Map<String, String> data) throws Exception {
+    public static boolean isSignatureValid(Map<String, String> data, WXPayConfig config) throws Exception {
         String sign = data.get(WXPayConstants.FIELD_SIGN);
         if(sign == null){
             return false;
         }
-        return generateSignature(data, true).equals(sign);
+        return generateSignature(data, true, config).equals(sign);
     }
     /**
      * 向 入参 Map 中添加 appid、mch_id、nonce_str、sign_type、sign <br>
      * 该函数适用于商户适用于统一下单等接口，不适用于红包、代金券接口
      *
      * @param reqData
-     * @param signType
-     *            指定签名类型
      * @return
      * @throws Exception
      */
-    public static Map<String, String> fillRequestData(Map<String, String> reqData) throws Exception {
-        return fillRequestData(reqData, null);
+    public static Map<String, String> fillRequestData(Map<String, String> reqData, WXPayConfig config) throws Exception {
+        return fillRequestData(reqData, SignType.getByName(reqData.get(WXPayConstants.FIELD_SIGN_TYPE)), config);
     }
     /**
      * 向 入参 Map 中添加 appid、mch_id、nonce_str、sign_type、sign <br>
@@ -158,16 +154,16 @@ public class WXPayUtil {
      * @return
      * @throws Exception
      */
-    public static Map<String, String> fillRequestData(Map<String, String> reqData, SignType signType) throws Exception {
-        reqData.put("appid", WXPayConfig.getAppID());
-        reqData.put("mch_id", WXPayConfig.getMchID());
+    public static Map<String, String> fillRequestData(Map<String, String> reqData, SignType signType, WXPayConfig config) throws Exception {
+        reqData.put("appid", config.getAppID());
+        reqData.put("mch_id", config.getMchID());
         reqData.put("nonce_str", WXPayUtil.generateNonceStr());
         if (signType == null) {
-            reqData.put("sign_type", WXPayConstants.DEFAULT_SIGNTYPE);
+            reqData.put(WXPayConstants.FIELD_SIGN_TYPE, WXPayConstants.DEFAULT_SIGNTYPE);
         } else {
-            reqData.put("sign_type", signType.getName());
+            reqData.put(WXPayConstants.FIELD_SIGN_TYPE, signType.getName());
         }
-        reqData.put("sign", WXPayUtil.generateSignature(reqData));
+        reqData.put(WXPayConstants.FIELD_SIGN, WXPayUtil.generateSignature(reqData, config));
         return reqData;
     }
 
@@ -178,8 +174,8 @@ public class WXPayUtil {
      * @param key API密钥
      * @return 签名
      */
-    private static String generateSignature(final Map<String, String> data) throws Exception {
-        return generateSignature(data, false);
+    private static String generateSignature(final Map<String, String> data, WXPayConfig config) throws Exception {
+        return generateSignature(data, false, config);
     }
 
 
@@ -204,7 +200,7 @@ public class WXPayUtil {
      * @param wx 是否来自外部数据
      * @return 签名
      */
-    private static String generateSignature(final Map<String, String> data, boolean wx) throws Exception {
+    private static String generateSignature(final Map<String, String> data, boolean wx, WXPayConfig config) throws Exception {
         String signType = data.get(WXPayConstants.FIELD_SIGN_TYPE);
         if(signType == null){
             signType = WXPayConstants.DEFAULT_SIGNTYPE;
@@ -223,12 +219,12 @@ public class WXPayUtil {
             if (data.get(k).trim().length() > 0) // 参数值为空，则不参与签名
                 sb.append(k).append("=").append(data.get(k).trim()).append("&");
         }
-        sb.append("key=").append(WXPayConfig.getKey());
+        sb.append("key=").append(config.getKey());
         if (WXPayConstants.MD5.equals(signType)) {
             return MD5(sb.toString()).toUpperCase();
         }
         else if (WXPayConstants.HMACSHA256.equals(signType)) {
-            return HMACSHA256(sb.toString());
+            return HMACSHA256(sb.toString(), config);
         }
         else {
             throw new Exception(String.format("Invalid sign_type: %s", signType));
@@ -258,9 +254,9 @@ public class WXPayUtil {
      * @return 加密结果
      * @throws Exception
      */
-    private static String HMACSHA256(String data) throws Exception {
+    private static String HMACSHA256(String data, WXPayConfig config) throws Exception {
         Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
-        SecretKeySpec secret_key = new SecretKeySpec(WXPayConfig.getKey().getBytes("UTF-8"), "HmacSHA256");
+        SecretKeySpec secret_key = new SecretKeySpec(config.getKey().getBytes("UTF-8"), "HmacSHA256");
         sha256_HMAC.init(secret_key);
         byte[] array = sha256_HMAC.doFinal(data.getBytes("UTF-8"));
         StringBuilder sb = new StringBuilder();
@@ -268,15 +264,6 @@ public class WXPayUtil {
             sb.append(Integer.toHexString((item & 0xFF) | 0x100).substring(1, 3));
         }
         return sb.toString().toUpperCase();
-    }
-
-    /**
-     * 日志
-     * @return
-     */
-    public static Logger getLogger() {
-        Logger logger = LoggerFactory.getLogger("wxpay java sdk");
-        return logger;
     }
 
     /**
