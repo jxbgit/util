@@ -25,19 +25,20 @@ import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.*;
 
-
 public class WXPayUtil {
 
     private static final String SYMBOLS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     private static final Random RANDOM = new SecureRandom();
 
-    private WXPayUtil(){
+    private WXPayUtil() {
     }
+
     /**
      * XML格式字符串转换为Map
      *
-     * @param strXML XML字符串
+     * @param strXML
+     *            XML字符串
      * @return XML数据转换后的Map
      * @throws Exception
      */
@@ -71,7 +72,8 @@ public class WXPayUtil {
     /**
      * 将Map转换为XML格式的字符串
      *
-     * @param data Map类型数据
+     * @param data
+     *            Map类型数据
      * @return XML格式的字符串
      * @throws Exception
      */
@@ -79,7 +81,7 @@ public class WXPayUtil {
         Document document = newDocument();
         Element root = document.createElement("xml");
         document.appendChild(root);
-        for (String key: data.keySet()) {
+        for (String key : data.keySet()) {
             String value = data.get(key);
             if (value == null) {
                 value = "";
@@ -97,11 +99,10 @@ public class WXPayUtil {
         StringWriter writer = new StringWriter();
         StreamResult result = new StreamResult(writer);
         transformer.transform(source, result);
-        String output = writer.getBuffer().toString(); //.replaceAll("\n|\r", "");
+        String output = writer.getBuffer().toString(); // .replaceAll("\n|\r", "");
         try {
             writer.close();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
         }
         return output;
     }
@@ -109,8 +110,10 @@ public class WXPayUtil {
     /**
      * 判断签名是否正确，必须包含sign字段，否则返回false。（仅适用于检测外部数据）
      *
-     * @param xmlStr XML格式数据
-     * @param key API密钥
+     * @param xmlStr
+     *            XML格式数据
+     * @param key
+     *            API密钥
      * @return 签名是否正确
      * @throws Exception
      */
@@ -121,18 +124,21 @@ public class WXPayUtil {
     /**
      * 判断签名是否正确，必须包含sign字段，否则返回false。（仅适用于检测外部数据）
      *
-     * @param data Map类型数据
-     * @param key API密钥
+     * @param data
+     *            Map类型数据
+     * @param key
+     *            API密钥
      * @return 签名是否正确
      * @throws Exception
      */
     public static boolean isSignatureValid(Map<String, String> data, WXPayConfig config) throws Exception {
         String sign = data.get(WXPayConstants.FIELD_SIGN);
-        if(sign == null){
+        if (sign == null) {
             return false;
         }
-        return generateSignature(data, true, config).equals(sign);
+        return generateSignature(data, WXPayConstants.FIELD_SIGN_TYPE, config).equals(sign);
     }
+
     /**
      * 向 入参 Map 中添加 appid、mch_id、nonce_str、sign_type、sign <br>
      * 该函数适用于商户适用于统一下单等接口，不适用于红包、代金券接口
@@ -144,6 +150,7 @@ public class WXPayUtil {
     public static Map<String, String> fillRequestData(Map<String, String> reqData, WXPayConfig config) throws Exception {
         return fillRequestData(reqData, SignType.getByName(reqData.get(WXPayConstants.FIELD_SIGN_TYPE)), config);
     }
+
     /**
      * 向 入参 Map 中添加 appid、mch_id、nonce_str、sign_type、sign <br>
      * 该函数适用于商户适用于统一下单等接口，不适用于红包、代金券接口
@@ -168,45 +175,33 @@ public class WXPayUtil {
     }
 
     /**
-     * 生成请求微信接口的签名，若不包含签名类型参数，将添加默认参数值 {@link WXPayConstants.DEFAULT_SIGNTYPE}。
+     * 生成请求微信接口的签名，若不包含签名类型字段，将使用 {@link WXPayConstants.DEFAULT_SIGNTYPE}进行签名。
      *
-     * @param data 待签名数据
-     * @param key API密钥
+     * @param data
+     *            待签名数据
+     * @param key
+     *            API密钥
      * @return 签名
      */
-    private static String generateSignature(final Map<String, String> data, WXPayConfig config) throws Exception {
-        return generateSignature(data, false, config);
-    }
-
-
-    /**
-     * 获取随机字符串 Nonce Str
-     *
-     * @return String 随机字符串
-     */
-    public static String generateNonceStr() {
-        char[] nonceChars = new char[32];
-        for (int index = 0; index < nonceChars.length; ++index) {
-            nonceChars[index] = SYMBOLS.charAt(RANDOM.nextInt(SYMBOLS.length()));
-        }
-        return new String(nonceChars);
+    public static String generateSignature(final Map<String, String> data, WXPayConfig config) throws Exception {
+        return generateSignature(data, WXPayConstants.FIELD_SIGN_TYPE, config);
     }
 
     /**
-     * 生成签名，若不包含签名类型参数，将添加默认参数值 {@link WXPayConstants.DEFAULT_SIGNTYPE}。
+     * 微信支付标准签名算法，若不包含签名类型字段，将使用 {@link WXPayConstants.DEFAULT_SIGNTYPE}进行签名。
      *
-     * @param data 待签名数据
-     * @param key API密钥
-     * @param wx 是否来自外部数据
+     * @param data
+     *            待签名数据
+     * @param signTypeField
+     *            签名类型字段名
+     * @param key
+     *            API密钥
      * @return 签名
      */
-    private static String generateSignature(final Map<String, String> data, boolean wx, WXPayConfig config) throws Exception {
-        String signType = data.get(WXPayConstants.FIELD_SIGN_TYPE);
-        if(signType == null){
+    public static String generateSignature(final Map<String, String> data, String signTypeField, WXPayConfig config) throws Exception {
+        String signType = data.get(signTypeField);
+        if (signType == null) {
             signType = WXPayConstants.DEFAULT_SIGNTYPE;
-            if(!wx){
-                data.put(WXPayConstants.FIELD_SIGN_TYPE, WXPayConstants.DEFAULT_SIGNTYPE);
-            }
         }
         Set<String> keySet = data.keySet();
         String[] keyArray = keySet.toArray(new String[keySet.size()]);
@@ -222,11 +217,9 @@ public class WXPayUtil {
         sb.append("key=").append(config.getKey());
         if (WXPayConstants.MD5.equals(signType)) {
             return MD5(sb.toString()).toUpperCase();
-        }
-        else if (WXPayConstants.HMACSHA256.equals(signType)) {
+        } else if (WXPayConstants.HMACSHA256.equals(signType)) {
             return HMACSHA256(sb.toString(), config);
-        }
-        else {
+        } else {
             throw new Exception(String.format("Invalid sign_type: %s", signType));
         }
     }
@@ -234,7 +227,8 @@ public class WXPayUtil {
     /**
      * 生成 MD5
      *
-     * @param data 待处理数据
+     * @param data
+     *            待处理数据
      * @return MD5结果
      */
     private static String MD5(String data) throws Exception {
@@ -249,8 +243,11 @@ public class WXPayUtil {
 
     /**
      * 生成 HMACSHA256
-     * @param data 待处理数据
-     * @param key 密钥
+     * 
+     * @param data
+     *            待处理数据
+     * @param key
+     *            密钥
      * @return 加密结果
      * @throws Exception
      */
@@ -268,12 +265,26 @@ public class WXPayUtil {
 
     /**
      * 获取当前时间戳，单位秒
+     * 
      * @return
      */
     public static long getCurrentTimestamp() {
-        return System.currentTimeMillis()/1000;
+        return System.currentTimeMillis() / 1000;
     }
-    
+
+    /**
+     * 获取随机字符串 Nonce Str
+     *
+     * @return String 随机字符串
+     */
+    public static String generateNonceStr() {
+        char[] nonceChars = new char[32];
+        for (int index = 0; index < nonceChars.length; ++index) {
+            nonceChars[index] = SYMBOLS.charAt(RANDOM.nextInt(SYMBOLS.length()));
+        }
+        return new String(nonceChars);
+    }
+
     private static DocumentBuilder newDocumentBuilder() throws ParserConfigurationException {
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         documentBuilderFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
