@@ -30,6 +30,7 @@ public class Main {
         // wxpay();
         // downloadBill();
         // prop();
+        System.out.println(HttpUtils.doGet("http://localhost/MessageQueue/addQueue?msgType=MSM&capacity=2100000000"));
         concurrency();
     }
 
@@ -92,7 +93,7 @@ public class Main {
 
     @SuppressWarnings("unused")
     private static void concurrency() throws Exception {
-        int i = 100;
+        int i = 10;
         final CountDownLatch latch = new CountDownLatch(i);
         Thread[] ts = new Thread[i];
         while (--i >= 0) {
@@ -100,11 +101,13 @@ public class Main {
                 @Override
                 public void run() {
                     Map<String, String> params = new HashMap<>();
-                    params.put("orderBody", "1");
-                    params.put("orderMoney", "100");
+                    params.put("name", "MSM");
+                    params.put("target", "13800138000");
+                    params.put("msg", Thread.currentThread().getName());
                     try {
-                        for (int j = 0; j < 1; j++) {
-                            String rst = HttpUtils.doGet("http://trt.jimlp.com/wx/unifiedOrder", params, "UTF-8");
+                        for (int j = 0; j < 10000; j++) {
+                            String rst = HttpUtils.doGet("http://localhost/MessageQueue/putMsg", params, "UTF-8");
+                            System.out.println(rst);
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
