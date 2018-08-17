@@ -93,21 +93,16 @@ public class Main {
 
     @SuppressWarnings("unused")
     private static void concurrency() throws Exception {
-        int i = 10;
+        int i = 1000;
         final CountDownLatch latch = new CountDownLatch(i);
         Thread[] ts = new Thread[i];
         while (--i >= 0) {
             Thread t = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    Map<String, String> params = new HashMap<>();
-                    params.put("name", "MSM");
-                    params.put("target", "13800138000");
-                    params.put("msg", Thread.currentThread().getName());
                     try {
                         for (int j = 0; j < 10000; j++) {
-                            String rst = HttpUtils.doGet("http://localhost/MessageQueue/putMsg", params, "UTF-8");
-                            System.out.println(rst);
+                            String rst = HttpUtils.doGet("http://localhost/MessageQueue/putMsg?name=MSM&target=13800138000&msg=msg");
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
