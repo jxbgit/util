@@ -10,8 +10,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.dom4j.Document;
@@ -32,8 +30,8 @@ public class XmlUtils {
      * @throws DocumentException
      * @throws FileNotFoundException
      */
-    public static Map<String, Object> simpleXmlToMap(File xmlFile) throws DocumentException, FileNotFoundException {
-        return simpleXmlToMap(new FileInputStream(xmlFile));
+    public static Map<String, Object> XmlToMap(File xmlFile) throws DocumentException, FileNotFoundException {
+        return XmlToMap(new FileInputStream(xmlFile));
     }
 
     /**
@@ -45,8 +43,8 @@ public class XmlUtils {
      * @throws DocumentException
      * @throws FileNotFoundException
      */
-    public static Map<String, Object> simpleXmlToMap(File xmlFile, String encoding) throws DocumentException, FileNotFoundException {
-        return simpleXmlToMap(new FileInputStream(xmlFile), encoding);
+    public static Map<String, Object> XmlToMap(File xmlFile, String encoding) throws DocumentException, FileNotFoundException {
+        return XmlToMap(new FileInputStream(xmlFile), encoding);
     }
 
     /**
@@ -58,8 +56,8 @@ public class XmlUtils {
      * @throws DocumentException
      * @throws UnsupportedEncodingException
      */
-    public static Map<String, Object> simpleXmlToMap(String xmlStr) throws DocumentException, UnsupportedEncodingException {
-        return simpleXmlToMap(xmlStr, ENCODING);
+    public static Map<String, Object> XmlToMap(String xmlStr) throws DocumentException, UnsupportedEncodingException {
+        return XmlToMap(xmlStr, ENCODING);
     }
 
     /**
@@ -73,12 +71,12 @@ public class XmlUtils {
      * @throws DocumentException
      * @throws UnsupportedEncodingException
      */
-    public static Map<String, Object> simpleXmlToMap(String xmlStr, String encoding) throws DocumentException, UnsupportedEncodingException {
+    public static Map<String, Object> XmlToMap(String xmlStr, String encoding) throws DocumentException, UnsupportedEncodingException {
         String _encoding = getEncoding(xmlStr);
         _encoding = _encoding == null ? encoding : _encoding;
         byte[] b = xmlStr.getBytes(_encoding);
         InputStream inputStream = new ByteArrayInputStream(b);
-        return simpleXmlToMap(inputStream, encoding);
+        return XmlToMap(inputStream, encoding);
     }
 
     /**
@@ -88,8 +86,8 @@ public class XmlUtils {
      * @return
      * @throws DocumentException
      */
-    public static Map<String, Object> simpleXmlToMap(InputStream inputStream) throws DocumentException {
-        return simpleXmlToMap(inputStream, ENCODING);
+    public static Map<String, Object> XmlToMap(InputStream inputStream) throws DocumentException {
+        return XmlToMap(inputStream, ENCODING);
     }
 
     /**
@@ -100,14 +98,14 @@ public class XmlUtils {
      * @return
      * @throws DocumentException
      */
-    public static Map<String, Object> simpleXmlToMap(InputStream inputStream, String encoding) throws DocumentException {
+    public static Map<String, Object> XmlToMap(InputStream inputStream, String encoding) throws DocumentException {
         Map<String, Object> map = new HashMap<String, Object>();
         SAXReader reader = new SAXReader();
         reader.setEncoding(encoding);
         setFeature(reader);
         Document doc = reader.read(inputStream);
         Element root = doc.getRootElement();
-        map = simpleElementToMap(root);
+        map = ElementToMap(root);
         return map;
     }
 
@@ -118,8 +116,8 @@ public class XmlUtils {
      * @return
      * @throws DocumentException
      */
-    public static Map<String, String> simpleXmlToMapOnlyChild(InputStream inputStream) throws DocumentException {
-        return simpleXmlToMapOnlyChild(inputStream, ENCODING);
+    public static Map<String, String> XmlToMapOnlyChild(InputStream inputStream) throws DocumentException {
+        return XmlToMapOnlyChild(inputStream, ENCODING);
     }
 
     /**
@@ -130,13 +128,13 @@ public class XmlUtils {
      * @return
      * @throws DocumentException
      */
-    public static Map<String, String> simpleXmlToMapOnlyChild(InputStream inputStream, String encoding) throws DocumentException {
+    public static Map<String, String> XmlToMapOnlyChild(InputStream inputStream, String encoding) throws DocumentException {
         SAXReader reader = new SAXReader();
         reader.setEncoding(encoding);
         setFeature(reader);
         Document doc = reader.read(inputStream);
         Element root = doc.getRootElement();
-        Map<String, String> map = simpleElementToMapOnlyChild(root);
+        Map<String, String> map = ElementToMapOnlyChild(root);
         return map;
     }
 
@@ -146,7 +144,7 @@ public class XmlUtils {
      * @param ele
      * @return
      */
-    public static Map<String, String> simpleElementToMapOnlyChild(Element ele) {
+    public static Map<String, String> ElementToMapOnlyChild(Element ele) {
         Map<String, String> map = new HashMap<>();
         @SuppressWarnings("unchecked")
         List<Element> eleList = ele.elements();
@@ -167,7 +165,7 @@ public class XmlUtils {
      * @param ele
      * @return
      */
-    public static Map<String, Object> simpleElementToMap(Element ele) {
+    public static Map<String, Object> ElementToMap(Element ele) {
         Map<String, Object> map = new HashMap<>();
         @SuppressWarnings("unchecked")
         List<Element> eleList = ele.elements();
@@ -181,7 +179,7 @@ public class XmlUtils {
         Map<String, Object> childMap = new HashMap<>();
         for (Iterator<Element> iter = eleList.iterator(); iter.hasNext();) {
             Element innerEle = iter.next();
-            childMap.putAll(simpleElementToMap(innerEle));
+            childMap.putAll(ElementToMap(innerEle));
         }
         map.put(name, childMap);
 
@@ -223,8 +221,8 @@ public class XmlUtils {
      *            子元素数据
      * @return
      */
-    public static String mapToSimpleXmlOnlyOneLayer(String rootEle, Map<String, String> childMap) {
-        return mapToSimpleXmlOnlyOneLayer(rootEle, childMap, ENCODING, false);
+    public static String mapToXml(String rootEle, Map<String, ?> childMap) {
+        return mapToXml(rootEle, childMap, null, false);
     }
 
     /**
@@ -240,7 +238,7 @@ public class XmlUtils {
      *            数据值是否使用CDATA处理
      * @return
      */
-    public static String mapToSimpleXmlOnlyOneLayer(String rootEle, Map<String, String> childMap, String encoding, boolean userCDATA) {
+    public static String mapToXml(String rootEle, Map<String, ?> childMap, String encoding, boolean userCDATA) {
         StringBuilder xml = new StringBuilder();
         if (encoding != null) {
             xml.append("<?xml version=\"1.0\" encoding=\"");
@@ -250,26 +248,7 @@ public class XmlUtils {
         xml.append("<");
         xml.append(rootEle);
         xml.append('>');
-        Set<Entry<String, String>> entrySet = childMap.entrySet();
-        String key = null;
-        Object val = null;
-        for (Entry<String, String> entry : entrySet) {
-            key = entry.getKey();
-            xml.append("<");
-            xml.append(key);
-            xml.append('>');
-            val = entry.getValue();
-            if (userCDATA) {
-                xml.append("<![CDATA[");
-            }
-            xml.append(val);
-            if (userCDATA) {
-                xml.append("]]>");
-            }
-            xml.append("</");
-            xml.append(key);
-            xml.append('>');
-        }
+        xml.append(mapToXml(childMap));
         xml.append("</");
         xml.append(rootEle);
         xml.append('>');
@@ -283,8 +262,8 @@ public class XmlUtils {
      *            数据
      * @return
      */
-    public static String mapToSimpleXml(Map<String, ?> map) {
-        return mapToSimpleXml(map, null, false);
+    public static String mapToXml(Map<String, ?> map) {
+        return mapToXml(map, null, false);
     }
 
     /**
@@ -296,8 +275,8 @@ public class XmlUtils {
      *            指定xml声明中使用的编码（若不指定，将不包含声明部分）
      * @return
      */
-    public static String mapToSimpleXml(Map<String, ?> map, String encoding) {
-        return mapToSimpleXml(map, encoding, false);
+    public static String mapToXml(Map<String, ?> map, String encoding) {
+        return mapToXml(map, encoding, false);
     }
 
     /**
@@ -312,34 +291,26 @@ public class XmlUtils {
      * @return
      */
     @SuppressWarnings("unchecked")
-    public static String mapToSimpleXml(Map<String, ?> map, String encoding, boolean userCDATA) {
+    public static String mapToXml(Map<String, ?> map, String encoding, boolean userCDATA) {
         StringBuilder xml = new StringBuilder();
         if (encoding != null) {
             xml.append("<?xml version=\"1.0\" encoding=\"");
             xml.append(encoding);
             xml.append("\"?>");
         }
-        xml.append("<");
-        String root = map.keySet().iterator().next();
-        xml.append(root);
-        xml.append('>');
-        Set<Entry<String, Object>> entrySet = ((Map<String, Object>) map.get(root)).entrySet();
-        String key = null;
-        Object val = null;
-        for (Entry<String, Object> entry : entrySet) {
-            key = entry.getKey();
+        for (String key : map.keySet()) {
             xml.append("<");
             xml.append(key);
             xml.append('>');
-            val = entry.getValue();
-            if (val instanceof Map) {
-                val = mapToSimpleXml((Map<String, Object>) val, null, userCDATA);
-                xml.append(val);
+            Object rootEleVal = map.get(key);
+            if (rootEleVal instanceof Map) {
+                rootEleVal = mapToXml((Map<String, Object>) rootEleVal, null, userCDATA);
+                xml.append(rootEleVal);
             } else {
                 if (userCDATA) {
                     xml.append("<![CDATA[");
                 }
-                xml.append(val);
+                xml.append(rootEleVal);
                 if (userCDATA) {
                     xml.append("]]>");
                 }
@@ -348,9 +319,6 @@ public class XmlUtils {
             xml.append(key);
             xml.append('>');
         }
-        xml.append("</");
-        xml.append(root);
-        xml.append('>');
         return xml.toString();
     }
 

@@ -3,19 +3,30 @@ package util;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.security.MessageDigest;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.jimlp.pay.weixin.sdk.WXPay;
 import com.jimlp.pay.weixin.sdk.WXPayConfig;
 import com.jimlp.pay.weixin.sdk.WXPayUtil;
+import com.jimlp.util.ChineseUtils;
 import com.jimlp.util.file.PropertiesUtils;
 import com.jimlp.util.time.SimpleDateFormatUtils;
 import com.jimlp.util.web.http.HttpUtils;
+import com.jimlp.util.xml.XmlUtils;
+
 
 public class Main {
     public static WXPayConfig configTest = new WXPayConfigTestImpl();
@@ -23,6 +34,23 @@ public class Main {
     public static WXPayConfig config = configTest;
 
     public static void main(String[] args) throws Exception {
+        Map<String, Object> reqData = new HashMap<>();
+        Map<String, String> head = new HashMap<>();
+        head.put("Version", "v1.0.3");
+        head.put("MerCode", "207133");
+        Map<String, String> body = new HashMap<>();
+        body.put("ServerUrl", "http://www.ips.com/back.html");
+        body.put("GoodsName", "测试GoodsName");
+        Map<String, Object> GateWayReq = new HashMap<>();
+        GateWayReq.put("head", head);
+        GateWayReq.put("body", body);
+        Map<String, Object> Ips = new HashMap<>();
+        Ips.put("GateWayReq", GateWayReq);
+        reqData.put("Ips", Ips);
+        System.out.println(JSON.toJSONString(reqData));
+        System.out.println(XmlUtils.mapToXml(reqData,"utf-8"));
+        
+        
         // wxpay();
         // orderquery();
         // wxpay();
@@ -30,15 +58,14 @@ public class Main {
         // wxpay();
         // downloadBill();
         // prop();
-        System.out.println(HttpUtils.doGet("http://localhost/MessageQueue/addQueue?msgType=MSM&capacity=2100000000"));
-        concurrency();
+//        concurrency();
     }
 
     @SuppressWarnings("unused")
     private static void wxpay() throws Exception, IOException, UnsupportedEncodingException {
         Map<String, String> reqData = new HashMap<>();
         reqData.put("body", "TRT-test1");
-        reqData.put("out_trade_no", "12310");
+        reqData.put("out_trade_no", "12314");
         // reqData.put("out_trade_no", "123123123");// 2018-07-11 13:00:00
         reqData.put("total_fee", "1");
         reqData.put("spbill_create_ip", "60.25.179.113");
@@ -48,7 +75,7 @@ public class Main {
         // reqData.put("time_start", SimpleDateFormatUtils.format(new Date(),
         // "yyyyMMddHHmmss"));
         Calendar c = Calendar.getInstance();
-        c.add(Calendar.MINUTE, 1);
+        c.add(Calendar.MINUTE, 3);
         reqData.put("time_expire", SimpleDateFormatUtils.format(c.getTime(), "yyyyMMddHHmmss"));
         // reqData.put("openid", openId);
         System.out.println(WXPayUtil.mapToXml(WXPay.instance(config).unifiedOrder(reqData)));
@@ -93,16 +120,23 @@ public class Main {
 
     @SuppressWarnings("unused")
     private static void concurrency() throws Exception {
-        int i = 1000;
+        final LinkedBlockingQueue<String> queue = new LinkedBlockingQueue<>(9);
+        queue.put("13800138000");
+        int i = queue.size();
         final CountDownLatch latch = new CountDownLatch(i);
         Thread[] ts = new Thread[i];
         while (--i >= 0) {
             Thread t = new Thread(new Runnable() {
                 @Override
                 public void run() {
+                    Map<String, String> params = new HashMap<>();
+                    params.put("name", "SMS");
+                    params.put("target", queue.poll());
                     try {
-                        for (int j = 0; j < 10000; j++) {
-                            String rst = HttpUtils.doGet("http://localhost/MessageQueue/putMsg?name=MSM&target=13800138000&msg=msg");
+                        for (int j = 0; j < 2; j++) {
+                            params.put("msg", ""+Thread.currentThread().getId()+j);
+                            String rst = HttpUtils.doGet("http://localhost/MessageQueue/putMsg", params, "UTF-8");
+                            System.out.println(rst);
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
