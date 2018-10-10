@@ -47,6 +47,8 @@ public class Main {
         Map<String, Object> Ips = new HashMap<>();
         Ips.put("GateWayReq", GateWayReq);
         reqData.put("Ips", Ips);
+        reqData = XmlUtils.XmlToMap(new File("C:/Users/LY/Desktop/workspace_jxb/WG-etonepay/src/main/resources/config/sys/spring-mvc.xml"));
+        System.out.println(reqData);
         System.out.println(JSON.toJSONString(reqData));
         System.out.println(XmlUtils.mapToXml(reqData,"utf-8"));
         

@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,15 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.xml.sax.SAXException;
 
+/**
+ * 
+ *
+ * 修改时间 2018年10月10日下午6:13:10<br>
+ * {@link Map} 实现从{@link HashMap}改用{@link IdentityHashMap}。支持重复子元素<br>
+ * 
+ * @author jxb
+ *
+ */
 public class XmlUtils {
 
     private static final String ENCODING = "UTF-8";
@@ -99,7 +109,7 @@ public class XmlUtils {
      * @throws DocumentException
      */
     public static Map<String, Object> XmlToMap(InputStream inputStream, String encoding) throws DocumentException {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new IdentityHashMap<String, Object>();
         SAXReader reader = new SAXReader();
         reader.setEncoding(encoding);
         setFeature(reader);
@@ -145,7 +155,7 @@ public class XmlUtils {
      * @return
      */
     public static Map<String, String> ElementToMapOnlyChild(Element ele) {
-        Map<String, String> map = new HashMap<>();
+        Map<String, String> map = new IdentityHashMap<>();
         @SuppressWarnings("unchecked")
         List<Element> eleList = ele.elements();
         int size = eleList.size();
@@ -166,17 +176,17 @@ public class XmlUtils {
      * @return
      */
     public static Map<String, Object> ElementToMap(Element ele) {
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> map = new IdentityHashMap<>();
         @SuppressWarnings("unchecked")
         List<Element> eleList = ele.elements();
-        String name = ele.getName();
+        String name = new String(ele.getName());
         int size = eleList.size();
         if (size == 0) {
             map.put(name, ele.getTextTrim());
             return map;
         }
 
-        Map<String, Object> childMap = new HashMap<>();
+        Map<String, Object> childMap = new IdentityHashMap<>();
         for (Iterator<Element> iter = eleList.iterator(); iter.hasNext();) {
             Element innerEle = iter.next();
             childMap.putAll(ElementToMap(innerEle));
