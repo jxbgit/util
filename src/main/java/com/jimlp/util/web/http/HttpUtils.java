@@ -30,7 +30,7 @@ import com.jimlp.util.io.InputStreamUtils;
 
 
 /**
- * 网络工具类。（所有HTTP请求默认连接超时1分钟，读取超时5分钟）。
+ * 网络工具类。（所有HTTP请求默认连接超时1分钟，读取超时1分钟）。
  * 
  * @author carver.gu
  * @since 1.0, Sep 12, 2009
@@ -41,7 +41,7 @@ public abstract class HttpUtils {
     private static boolean ignoreSSLCheck = true; // 忽略SSL检查
     private static boolean ignoreHostCheck = true; // 忽略HOST检查
     private static final int CONNECT_TIMEOUT =  60000; // 连接超时1分钟
-    private static final int READ_TIMEOUT =  300000; // 读取超时5分钟
+    private static final int READ_TIMEOUT =  60000; // 读取超时1分钟
 
     public static class TrustAllTrustManager implements X509TrustManager {
         public X509Certificate[] getAcceptedIssuers() {
@@ -56,14 +56,6 @@ public abstract class HttpUtils {
     }
 
     private HttpUtils() {
-    }
-
-    public static void setIgnoreSSLCheck(boolean ignoreSSLCheck) {
-        HttpUtils.ignoreSSLCheck = ignoreSSLCheck;
-    }
-
-    public static void setIgnoreHostCheck(boolean ignoreHostCheck) {
-        HttpUtils.ignoreHostCheck = ignoreHostCheck;
     }
 
     /**
@@ -307,6 +299,17 @@ public abstract class HttpUtils {
         return rsp;
     }
 
+    /**
+     * 执行HTTP GET请求。
+     * 
+     * @param url 请求地址
+     * @param params 请求参数
+     * @return 响应字符串
+     */
+    public static String doGet(String url, Map<String, String> params) throws IOException {
+        return doGet(url, params, null, DEFAULT_CHARSET, CONNECT_TIMEOUT, READ_TIMEOUT);
+    }
+    
     /**
      * 执行HTTP GET请求。
      * 

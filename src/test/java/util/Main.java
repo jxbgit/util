@@ -3,6 +3,7 @@ package util;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.management.ManagementFactory;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.util.Calendar;
@@ -10,9 +11,20 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.apache.poi.ddf.EscherColorRef.SysIndexSource;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -25,6 +37,7 @@ import com.jimlp.util.ChineseUtils;
 import com.jimlp.util.file.PropertiesUtils;
 import com.jimlp.util.time.SimpleDateFormatUtils;
 import com.jimlp.util.web.http.HttpUtils;
+import com.jimlp.util.weixin.mp.AccessTokenUtils;
 import com.jimlp.util.xml.XmlUtils;
 
 
@@ -32,27 +45,7 @@ public class Main {
     public static WXPayConfig configTest = new WXPayConfigTestImpl();
     public static WXPayConfig configRelease = new WXPayConfigImpl();
     public static WXPayConfig config = configTest;
-
     public static void main(String[] args) throws Exception {
-        Map<String, Object> reqData = new HashMap<>();
-        Map<String, String> head = new HashMap<>();
-        head.put("Version", "v1.0.3");
-        head.put("MerCode", "207133");
-        Map<String, String> body = new HashMap<>();
-        body.put("ServerUrl", "http://www.ips.com/back.html");
-        body.put("GoodsName", "测试GoodsName");
-        Map<String, Object> GateWayReq = new HashMap<>();
-        GateWayReq.put("head", head);
-        GateWayReq.put("body", body);
-        Map<String, Object> Ips = new HashMap<>();
-        Ips.put("GateWayReq", GateWayReq);
-        reqData.put("Ips", Ips);
-        reqData = XmlUtils.XmlToMap(new File("C:/Users/LY/Desktop/workspace_jxb/WG-etonepay/src/main/resources/config/sys/spring-mvc.xml"));
-        System.out.println(reqData);
-        System.out.println(JSON.toJSONString(reqData));
-        System.out.println(XmlUtils.mapToXml(reqData,"utf-8"));
-        
-        
         // wxpay();
         // orderquery();
         // wxpay();

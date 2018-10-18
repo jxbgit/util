@@ -90,4 +90,22 @@ public class RequestUtils {
 		c.setRequestProperty("X-Real-IP", IpUtils.getRandomIp());
 		return c;
 	}
+	
+    /**
+     * 
+     * @param request
+     * @param withPort
+     * @return http://domain/contextPath、http://domain:port/contextPath
+     */
+    public static String getbaseUrl(HttpServletRequest request, boolean withPort) {
+        StringBuilder sb = new StringBuilder(request.getScheme());
+        sb.append("://");
+        sb.append(request.getServerName());
+        if (withPort) {
+            sb.append(':');
+            sb.append(request.getServerPort());
+        }
+        sb.append(request.getServletContext().getContextPath());
+        return sb.toString();
+    }
 }
