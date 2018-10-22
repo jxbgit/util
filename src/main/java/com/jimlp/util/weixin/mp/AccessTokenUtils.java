@@ -3,6 +3,8 @@ package com.jimlp.util.weixin.mp;
 import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import com.alibaba.fastjson.JSONObject;
@@ -18,17 +20,30 @@ import com.jimlp.util.web.http.HttpUtils;
  *
  */
 public class AccessTokenUtils {
+    // 缓存appid
     private static String appid;
+    // 缓存secret
     private static String secret;
-    private static int expiresIn = 60;
+    // 缓存accessToken
     private static JSONObject accessToken;
-    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
+    // 当前accessToken有效时长，单位秒
+    private static int expiresIn = 10;
+    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2, new ThreadFactory() {
+        private int index = 0;
+
+        @Override
+        public Thread newThread(Runnable r) {
+            ThreadGroup tg = new ThreadGroup("AccessTokenFreshPool");
+            Thread t = new Thread(tg, r, tg.getName() + "-Thread-" + (++index));
+            return t;
+        }
+    });
+    private static ScheduledFuture<?> sf = null;
     private static final Runnable r = new Runnable() {
         @Override
         public void run() {
-            getAccessTokenAndReconfigureAutoRun();
-            startAutoRun();
-            Thread.currentThread().stop();
+            refreshAccessTokenAndReconfigureAutoRun();
+            System.out.println("定时刷新：" + expiresIn + accessToken);
         }
     };
 
@@ -42,7 +57,10 @@ public class AccessTokenUtils {
     }
 
     private static void startAutoRun() {
-        scheduler.scheduleAtFixedRate(r, expiresIn - 600, expiresIn - 600, TimeUnit.SECONDS);
+        if (sf != null) {
+            sf.cancel(true);
+        }
+        sf = scheduler.scheduleAtFixedRate(r, expiresIn - expiresIn / 10, expiresIn - expiresIn / 10, TimeUnit.SECONDS);
     }
 
     /**
@@ -56,16 +74,7 @@ public class AccessTokenUtils {
      *         错误情况：{"errcode":40013,"errmsg":"invalid appid"}
      */
     public static JSONObject getAccessToken(String appid, String secret) {
-        if (accessToken == null) {
-            synchronized (scheduler) {
-                if (accessToken == null) {
-                    init(appid, secret);
-                    getAccessTokenAndReconfigureAutoRun();
-                    startAutoRun();
-                }
-            }
-        }
-        return accessToken;
+        return getAccessToken(appid, secret, false);
     }
 
     /**
@@ -79,40 +88,55 @@ public class AccessTokenUtils {
      *         错误情况：{"errcode":40013,"errmsg":"invalid appid"}
      */
     public static JSONObject getAccessToken(String appid, String secret, boolean refresh) {
-        if (refresh) {
-            init(appid, secret);
-            getAccessTokenFromWeiXin(appid, secret);
-        } else {
-            getAccessToken(appid, secret);
+        if (refresh || accessToken == null) {
+            synchronized (scheduler) {
+                if (refresh || accessToken == null) {
+                    init(appid, secret);
+                    refreshAccessTokenAndReconfigureAutoRun();
+                }
+            }
         }
-        return accessToken;
+        JSONObject jo = null;
+        try {
+            jo = (JSONObject) accessToken.clone();
+        } catch (Exception e) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e1) {
+                e1.printStackTrace();
+                jo = (JSONObject) accessToken.clone();
+            }
+            jo = (JSONObject) accessToken.clone();
+        }
+        return jo;
     }
 
-    private static void getAccessTokenAndReconfigureAutoRun() {
-        getAccessTokenFromWeiXin(appid, secret);
+    private static void refreshAccessTokenAndReconfigureAutoRun() {
+        accessToken = getAccessTokenFromWeiXin(appid, secret);
         int _expiresIn = accessToken.getIntValue("expires_in");
         if (_expiresIn != expiresIn && _expiresIn > 0) {
             expiresIn = _expiresIn;
         }
+        startAutoRun();
     }
 
-    private static void getAccessTokenFromWeiXin(String appid, String secret) {
-        synchronized (scheduler) {
-            try {
-                String url = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=" + appid + "&secret=" + secret;
-                // 正常情况下，微信会返回下述JSON数据包给公众号：
-                // ----{"access_token":"ACCESS_TOKEN","expires_in":7200}
-                // expires_in：凭证有效时间，单位：秒
-                // 错误时微信会返回错误码等信息，JSON数据包示例如下（该示例为AppID无效错误）:
-                // ----{"errcode":40013,"errmsg":"invalid appid"}
-                String r = HttpUtils.doGet(url);
-                accessToken = JSONObject.parseObject(r);
-            } catch (Exception e) {
-                accessToken = new JSONObject();
-                accessToken.put("errcode", "-1");
-                accessToken.put("errmsg", "WeiXin API request failed:[" + e.getMessage() + "]");
-            }
-            accessToken.put("generate_at", SimpleDateFormatUtils.format(new Date()));
+    private static JSONObject getAccessTokenFromWeiXin(String appid, String secret) {
+        JSONObject jo = null;
+        try {
+            String url = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=" + appid + "&secret=" + secret;
+            // 正常情况下，微信会返回下述JSON数据包给公众号：
+            // ----{"access_token":"ACCESS_TOKEN","expires_in":7200}
+            // expires_in：凭证有效时间，单位：秒
+            // 错误时微信会返回错误码等信息，JSON数据包示例如下（该示例为AppID无效错误）:
+            // ----{"errcode":40013,"errmsg":"invalid appid"}
+            String r = HttpUtils.doGet(url);
+            jo = JSONObject.parseObject(r);
+        } catch (Exception e) {
+            jo = new JSONObject();
+            jo.put("errcode", "-1");
+            jo.put("errmsg", "WeiXin API request failed:[" + e.getMessage() + "]");
         }
+        jo.put("generate_at", SimpleDateFormatUtils.format(new Date()));
+        return jo;
     }
 }
