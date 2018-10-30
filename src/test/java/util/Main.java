@@ -3,42 +3,20 @@ package util;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.lang.management.ManagementFactory;
-import java.net.URL;
-import java.security.MessageDigest;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.poi.ddf.EscherColorRef.SysIndexSource;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.jimlp.pay.weixin.sdk.WXPay;
 import com.jimlp.pay.weixin.sdk.WXPayConfig;
 import com.jimlp.pay.weixin.sdk.WXPayUtil;
-import com.jimlp.util.ChineseUtils;
 import com.jimlp.util.file.PropertiesUtils;
 import com.jimlp.util.time.SimpleDateFormatUtils;
 import com.jimlp.util.web.http.HttpUtils;
-import com.jimlp.util.weixin.mp.AccessTokenUtils;
-import com.jimlp.util.xml.XmlUtils;
 
 
 public class Main {
