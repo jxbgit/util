@@ -105,7 +105,7 @@ public class RequestUtils {
             sb.append(':');
             sb.append(request.getServerPort());
         }
-        sb.append(request.getServletContext().getContextPath());
+        sb.append(request.getContextPath());
         return sb.toString();
     }
 }
