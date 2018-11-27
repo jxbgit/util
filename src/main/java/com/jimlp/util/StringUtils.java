@@ -1,5 +1,7 @@
 package com.jimlp.util;
 
+import java.util.Random;
+
 /**
  * 字符串工具类
  * 
@@ -10,6 +12,8 @@ package com.jimlp.util;
  *
  */
 public final class StringUtils {
+    
+    private static final String SYMBOLS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 	private StringUtils() {
 	}
@@ -163,4 +167,18 @@ public final class StringUtils {
 
 		return hexString.toString();
 	}
+	
+	/**
+     * 获取随机字符串
+     * @param length 指定随机串的长度
+     * @return String 随机字符串
+     */
+    public static String generateNonceStr(int length) {
+        char[] nonceChars = new char[length];
+        Random random = new Random();
+        for (int index = 0; index < length; ++index) {
+            nonceChars[index] = SYMBOLS.charAt(random.nextInt(SYMBOLS.length()));
+        }
+        return new String(nonceChars);
+    }
 }
