@@ -71,4 +71,29 @@ public class InputStreamUtils {
             }
         }
     }
+
+    /**
+     * 将输入流转字符串
+     * 
+     * @param reader
+     * @return
+     * @throws IOException
+     */
+    public static String inputStreamToString(Reader reader) throws IOException {
+        try {
+            StringBuilder response = new StringBuilder();
+
+            final char[] buff = new char[1024];
+            int read = 0;
+            while ((read = reader.read(buff)) > 0) {
+                response.append(buff, 0, read);
+            }
+
+            return response.toString();
+        } finally {
+            if (reader != null) {
+                reader.close();
+            }
+        }
+    }
 }
