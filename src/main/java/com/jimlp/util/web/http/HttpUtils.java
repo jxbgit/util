@@ -27,8 +27,6 @@ import javax.net.ssl.X509TrustManager;
 import com.jimlp.util.StringUtils;
 import com.jimlp.util.io.InputStreamUtils;
 
-
-
 /**
  * 网络工具类。（所有HTTP请求默认连接超时1分钟，读取超时1分钟）。
  * 
@@ -40,8 +38,8 @@ public abstract class HttpUtils {
     private static final String DEFAULT_CHARSET = Constants.CHARSET_UTF8;
     private static boolean ignoreSSLCheck = true; // 忽略SSL检查
     private static boolean ignoreHostCheck = true; // 忽略HOST检查
-    private static final int CONNECT_TIMEOUT =  60000; // 连接超时1分钟
-    private static final int READ_TIMEOUT =  60000; // 读取超时1分钟
+    private static final int CONNECT_TIMEOUT = 60000; // 连接超时1分钟
+    private static final int READ_TIMEOUT = 60000; // 读取超时1分钟
 
     public static class TrustAllTrustManager implements X509TrustManager {
         public X509Certificate[] getAcceptedIssuers() {
@@ -61,8 +59,10 @@ public abstract class HttpUtils {
     /**
      * 执行HTTP POST请求。
      * 
-     * @param url 请求地址
-     * @param params 请求参数
+     * @param url
+     *            请求地址
+     * @param params
+     *            请求参数
      * @return 响应字符串
      */
     public static String doPost(String url, Map<String, String> params) throws IOException {
@@ -72,9 +72,12 @@ public abstract class HttpUtils {
     /**
      * 执行HTTP POST请求。
      * 
-     * @param url 请求地址
-     * @param params 请求参数
-     * @param charset 字符集，如UTF-8, GBK, GB2312
+     * @param url
+     *            请求地址
+     * @param params
+     *            请求参数
+     * @param charset
+     *            字符集，如UTF-8, GBK, GB2312
      * @return 响应字符串
      */
     public static String doPost(String url, Map<String, String> params, String charset) throws IOException {
@@ -100,9 +103,12 @@ public abstract class HttpUtils {
     /**
      * 执行HTTP POST请求。
      * 
-     * @param url 请求地址
-     * @param ctype 请求类型
-     * @param content 请求字节数组
+     * @param url
+     *            请求地址
+     * @param ctype
+     *            请求类型
+     * @param content
+     *            请求字节数组
      * @return 响应字符串
      */
     public static String doPost(String url, String ctype, byte[] content) throws IOException {
@@ -112,10 +118,14 @@ public abstract class HttpUtils {
     /**
      * 执行HTTP POST请求。
      * 
-     * @param url 请求地址
-     * @param ctype 请求类型
-     * @param content 请求字节数组
-     * @param headerMap 请求头部参数
+     * @param url
+     *            请求地址
+     * @param ctype
+     *            请求类型
+     * @param content
+     *            请求字节数组
+     * @param headerMap
+     *            请求头部参数
      * @return 响应字符串
      */
     public static String doPost(String url, String ctype, byte[] content, int connectTimeout, int readTimeout, Map<String, String> headerMap, Proxy proxy) throws IOException {
@@ -148,9 +158,12 @@ public abstract class HttpUtils {
     /**
      * 执行带文件上传的HTTP POST请求。
      * 
-     * @param url 请求地址
-     * @param textParams 文本请求参数
-     * @param fileParams 文件请求参数
+     * @param url
+     *            请求地址
+     * @param textParams
+     *            文本请求参数
+     * @param fileParams
+     *            文件请求参数
      * @return 响应字符串
      */
     public static String doPost(String url, Map<String, String> params, Map<String, FileItem> fileParams) throws IOException {
@@ -164,10 +177,14 @@ public abstract class HttpUtils {
     /**
      * 执行带文件上传的HTTP POST请求。
      * 
-     * @param url 请求地址
-     * @param textParams 文本请求参数
-     * @param fileParams 文件请求参数
-     * @param charset 字符集，如UTF-8, GBK, GB2312
+     * @param url
+     *            请求地址
+     * @param textParams
+     *            文本请求参数
+     * @param fileParams
+     *            文件请求参数
+     * @param charset
+     *            字符集，如UTF-8, GBK, GB2312
      * @return 响应字符串
      */
     public static String doPost(String url, Map<String, String> params, Map<String, FileItem> fileParams, String charset) throws IOException {
@@ -177,15 +194,19 @@ public abstract class HttpUtils {
     /**
      * 执行带文件上传的HTTP POST请求。
      * 
-     * @param url 请求地址
-     * @param textParams 文本请求参数
-     * @param fileParams 文件请求参数
-     * @param charset 字符集，如UTF-8, GBK, GB2312
-     * @param headerMap 需要传递的header头，可以为空
+     * @param url
+     *            请求地址
+     * @param textParams
+     *            文本请求参数
+     * @param fileParams
+     *            文件请求参数
+     * @param charset
+     *            字符集，如UTF-8, GBK, GB2312
+     * @param headerMap
+     *            需要传递的header头，可以为空
      * @return 响应字符串
      */
-    public static String doPost(String url, Map<String, String> params, Map<String, FileItem> fileParams, String charset,
-            int connectTimeout, int readTimeout, Map<String, String> headerMap) throws IOException {
+    public static String doPost(String url, Map<String, String> params, Map<String, FileItem> fileParams, String charset, int connectTimeout, int readTimeout, Map<String, String> headerMap) throws IOException {
         if (fileParams == null || fileParams.isEmpty()) {
             return doPost(url, params, charset, headerMap, null);
         } else {
@@ -193,8 +214,7 @@ public abstract class HttpUtils {
         }
     }
 
-    private static String _doPostWithFile(String url, Map<String, String> params, Map<String, FileItem> fileParams,
-            String charset, int connectTimeout, int readTimeout, Map<String, String> headerMap) throws IOException {
+    private static String _doPostWithFile(String url, Map<String, String> params, Map<String, FileItem> fileParams, String charset, int connectTimeout, int readTimeout, Map<String, String> headerMap) throws IOException {
         String boundary = String.valueOf(System.nanoTime()); // 随机分隔线
         HttpURLConnection conn = null;
         OutputStream out = null;
@@ -268,17 +288,19 @@ public abstract class HttpUtils {
     /**
      * 执行HTTP GET请求。
      * 
-     * @param url 请求地址
+     * @param url
+     *            请求地址
      * @return 响应字符串
      */
     public static String doGet(String url) throws IOException {
         return doGet(url, null, null, DEFAULT_CHARSET, CONNECT_TIMEOUT, READ_TIMEOUT);
     }
-    
+
     /**
      * 执行HTTP GET请求。
      * 
-     * @param url 请求地址
+     * @param url
+     *            请求地址
      * @return
      */
     public static byte[] doGetAsByteArr(String url) throws IOException {
@@ -302,48 +324,79 @@ public abstract class HttpUtils {
     /**
      * 执行HTTP GET请求。
      * 
-     * @param url 请求地址
-     * @param params 请求参数
+     * @param url
+     *            请求地址
+     * @return
+     */
+    public static HttpURLConnection doGetConn(String url) throws IOException {
+        HttpURLConnection conn = null;
+        String ctype = "application/x-www-form-urlencoded;charset=" + DEFAULT_CHARSET;
+        conn = getConnection(buildGetUrl(url, null), Constants.METHOD_GET, ctype, null, null);
+        conn.setConnectTimeout(CONNECT_TIMEOUT);
+        conn.setReadTimeout(READ_TIMEOUT);
+        return conn;
+    }
+
+    /**
+     * 执行HTTP GET请求。
+     * 
+     * @param url
+     *            请求地址
+     * @param params
+     *            请求参数
      * @return 响应字符串
      */
     public static String doGet(String url, Map<String, String> params) throws IOException {
         return doGet(url, params, null, DEFAULT_CHARSET, CONNECT_TIMEOUT, READ_TIMEOUT);
     }
-    
+
     /**
      * 执行HTTP GET请求。
      * 
-     * @param url 请求地址
-     * @param params 请求参数
-     * @param charset 字符集，如UTF-8, GBK, GB2312
+     * @param url
+     *            请求地址
+     * @param params
+     *            请求参数
+     * @param charset
+     *            字符集，如UTF-8, GBK, GB2312
      * @return 响应字符串
      */
     public static String doGet(String url, Map<String, String> params, String charset) throws IOException {
         return doGet(url, params, null, charset, CONNECT_TIMEOUT, READ_TIMEOUT);
     }
-    
+
     /**
      * 执行HTTP GET请求
      * 
-     * @param url 请求地址
-     * @param params 请求参数
-     * @param charset 字符集，如UTF-8, GBK, GB2312
-     * @param headerMap 请求头
+     * @param url
+     *            请求地址
+     * @param params
+     *            请求参数
+     * @param charset
+     *            字符集，如UTF-8, GBK, GB2312
+     * @param headerMap
+     *            请求头
      * @return 响应字符串
      */
     public static String doGet(String url, Map<String, String> params, Map<String, String> headerMap, String charset) throws IOException {
         return doGet(url, params, headerMap, charset, CONNECT_TIMEOUT, READ_TIMEOUT);
     }
-    
+
     /**
      * 执行HTTP GET请求。
      * 
-     * @param url 请求地址
-     * @param params 请求参数
-     * @param charset 字符集，如UTF-8, GBK, GB2312
-     * @param headerMap 请求头
-     * @param connectTimeout 连接超时时间（毫秒）
-     * @param readTimeout 读取超时时间（毫秒）
+     * @param url
+     *            请求地址
+     * @param params
+     *            请求参数
+     * @param charset
+     *            字符集，如UTF-8, GBK, GB2312
+     * @param headerMap
+     *            请求头
+     * @param connectTimeout
+     *            连接超时时间（毫秒）
+     * @param readTimeout
+     *            读取超时时间（毫秒）
      * @return 响应字符串
      */
     public static String doGet(String url, Map<String, String> params, Map<String, String> headerMap, String charset, int connectTimeout, int readTimeout) throws IOException {
@@ -365,10 +418,10 @@ public abstract class HttpUtils {
 
         return rsp;
     }
-    
+
     private static HttpURLConnection getConnection(URL url, String method, String ctype, Map<String, String> headerMap, Proxy proxy) throws IOException {
         HttpURLConnection conn = null;
-        if(proxy == null) {
+        if (proxy == null) {
             conn = (HttpURLConnection) url.openConnection();
         } else {
             conn = (HttpURLConnection) url.openConnection(proxy);
@@ -403,16 +456,16 @@ public abstract class HttpUtils {
         conn.setRequestMethod(method);
         conn.setDoInput(true);
         conn.setDoOutput(true);
-        if(headerMap != null && headerMap.get(Constants.TOP_HTTP_DNS_HOST) != null){
+        if (headerMap != null && headerMap.get(Constants.TOP_HTTP_DNS_HOST) != null) {
             conn.setRequestProperty("Host", headerMap.get(Constants.TOP_HTTP_DNS_HOST));
-        }else{
+        } else {
             conn.setRequestProperty("Host", url.getHost());
         }
         conn.setRequestProperty("User-Agent", "jiml-util-java");
         conn.setRequestProperty("Content-Type", ctype);
         if (headerMap != null) {
             for (Map.Entry<String, String> entry : headerMap.entrySet()) {
-                if(!Constants.TOP_HTTP_DNS_HOST.equals(entry.getKey())){
+                if (!Constants.TOP_HTTP_DNS_HOST.equals(entry.getKey())) {
                     conn.setRequestProperty(entry.getKey(), entry.getValue());
                 }
             }
@@ -436,7 +489,7 @@ public abstract class HttpUtils {
         StringBuilder newUrl = new StringBuilder(url);
         boolean hasQuery = url.contains("?");
         boolean hasPrepend = url.endsWith("?") || url.endsWith("&");
-        
+
         for (String query : queries) {
             if (!StringUtils.isEmpty(query)) {
                 if (!hasPrepend) {
@@ -476,16 +529,16 @@ public abstract class HttpUtils {
 
         return query.toString();
     }
-    
+
     public static String getResponseAsString(HttpURLConnection conn) throws IOException {
         String charset = getResponseCharset(conn.getContentType());
         return InputStreamUtils.inputStreamToString(getResponseInputStream(conn), charset);
     }
-    
+
     public static byte[] getResponseAsByteArray(HttpURLConnection conn) throws IOException {
         return InputStreamUtils.inputStreamToByteArray(getResponseInputStream(conn));
     }
-    
+
     public static InputStream getResponseInputStream(HttpURLConnection conn) throws IOException {
         if (conn.getResponseCode() < HttpURLConnection.HTTP_BAD_REQUEST) {
             String contentEncoding = conn.getContentEncoding();
@@ -506,7 +559,7 @@ public abstract class HttpUtils {
             throw new IOException(conn.getResponseCode() + " " + conn.getResponseMessage());
         }
     }
-    
+
     public static String getResponseCharset(String ctype) {
         String charset = DEFAULT_CHARSET;
 
@@ -532,7 +585,8 @@ public abstract class HttpUtils {
     /**
      * 使用默认的UTF-8字符集反编码请求参数值。
      * 
-     * @param value 参数值
+     * @param value
+     *            参数值
      * @return 反编码后的参数值
      */
     public static String decode(String value) {
@@ -542,7 +596,8 @@ public abstract class HttpUtils {
     /**
      * 使用默认的UTF-8字符集编码请求参数值。
      * 
-     * @param value 参数值
+     * @param value
+     *            参数值
      * @return 编码后的参数值
      */
     public static String encode(String value) {
@@ -552,8 +607,10 @@ public abstract class HttpUtils {
     /**
      * 使用指定的字符集反编码请求参数值。
      * 
-     * @param value 参数值
-     * @param charset 字符集
+     * @param value
+     *            参数值
+     * @param charset
+     *            字符集
      * @return 反编码后的参数值
      */
     public static String decode(String value, String charset) {
@@ -571,8 +628,10 @@ public abstract class HttpUtils {
     /**
      * 使用指定的字符集编码请求参数值。
      * 
-     * @param value 参数值
-     * @param charset 字符集
+     * @param value
+     *            参数值
+     * @param charset
+     *            字符集
      * @return 编码后的参数值
      */
     public static String encode(String value, String charset) {
@@ -590,7 +649,8 @@ public abstract class HttpUtils {
     /**
      * 从URL中提取所有的参数。
      * 
-     * @param query URL地址
+     * @param query
+     *            URL地址
      * @return 参数映射
      */
     public static Map<String, String> splitUrlQuery(String query) {

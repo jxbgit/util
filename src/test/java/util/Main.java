@@ -3,6 +3,7 @@ package util;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -24,6 +25,12 @@ public class Main {
     public static WXPayConfig configRelease = new WXPayConfigImpl();
     public static WXPayConfig config = configTest;
     public static void main(String[] args) throws Exception {
+        String fee = new BigDecimal("1.2").multiply(new BigDecimal(100)).toString();
+        int d = fee.indexOf(".");
+        if(d != -1){
+            fee = fee.substring(0, d);
+        }
+        System.out.println(fee);
         // wxpay();
         // orderquery();
         // wxpay();
