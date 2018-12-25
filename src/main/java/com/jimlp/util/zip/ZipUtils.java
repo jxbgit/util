@@ -111,9 +111,7 @@ public class ZipUtils {
      * @throws IOException
      */
     public static void zip(File sourceFile, OutputStream out, boolean deep, int method, String zipRootDir) throws IOException {
-        try (ZipOutputStream zos = new ZipOutputStream(out, StandardCharsets.UTF_8)) {
-            zip(sourceFile, zos, zipRootDir, deep, method, null);
-        }
+        zip(sourceFile, out, deep, method, zipRootDir, null);
     }
 
     /**
@@ -132,8 +130,29 @@ public class ZipUtils {
      * @throws IOException
      */
     public static void zip(File sourceFile, OutputStream out, boolean deep, int method, FileFilter fileFilter) throws IOException {
+        zip(sourceFile, out, deep, method, null, fileFilter);
+    }
+
+    /**
+     * 压缩文件
+     * 
+     * @param sourceFile
+     *            要压缩的文件或目录
+     * @param out
+     *            指定压缩文件输出流
+     * @param deep
+     *            如果压缩一个目录，是否包含并压缩其子目录
+     * @param method
+     *            压缩方法，可以为 {@link ZipEntry.STORED} 或 {@link ZipEntry.DEFLATED}
+     * @param zipRootDir
+     *            文件压缩到指定的根目录（a、a/b、a/b/c）
+     * @param fileFilter
+     *            文件过滤器
+     * @throws IOException
+     */
+    public static void zip(File sourceFile, OutputStream out, boolean deep, int method, String zipRootDir, FileFilter fileFilter) throws IOException {
         try (ZipOutputStream zos = new ZipOutputStream(out, StandardCharsets.UTF_8)) {
-            zip(sourceFile, zos, null, deep, method, fileFilter);
+            zip(sourceFile, zos, zipRootDir, deep, method, fileFilter);
         }
     }
 
