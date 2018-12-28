@@ -3,6 +3,7 @@ package com.jimlp.util.zip;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,11 +35,12 @@ public class ZipUtils {
      *            要压缩的文件或目录
      * @param out
      *            指定压缩文件输出流
+     * @return 返回压缩包大小，略微小于实际大小
      * @throws IOException
      */
-    public static void zip(File sourceFile, OutputStream out) throws IOException {
+    public static long zip(File sourceFile, OutputStream out) throws IOException {
         try (ZipOutputStream zos = new ZipOutputStream(out, StandardCharsets.UTF_8)) {
-            zip(sourceFile, zos, null, true, ZipEntry.DEFLATED, null);
+            return zip(sourceFile, zos, null, true, ZipEntry.DEFLATED, null);
         }
     }
 
@@ -51,11 +53,12 @@ public class ZipUtils {
      *            指定压缩文件输出流
      * @param method
      *            压缩方法，可以为 {@link ZipEntry.STORED} 或 {@link ZipEntry.DEFLATED}
+     * @return 返回压缩包大小，略微小于实际大小
      * @throws IOException
      */
-    public static void zip(File sourceFile, OutputStream out, int method) throws IOException {
+    public static long zip(File sourceFile, OutputStream out, int method) throws IOException {
         try (ZipOutputStream zos = new ZipOutputStream(out, StandardCharsets.UTF_8)) {
-            zip(sourceFile, zos, null, true, method, null);
+            return zip(sourceFile, zos, null, true, method, null);
         }
     }
 
@@ -68,30 +71,12 @@ public class ZipUtils {
      *            指定压缩文件输出流
      * @param deep
      *            如果压缩一个目录，是否包含并压缩其子目录
+     * @return 返回压缩包大小，略微小于实际大小
      * @throws IOException
      */
-    public static void zip(File sourceFile, OutputStream out, boolean deep) throws IOException {
+    public static long zip(File sourceFile, OutputStream out, boolean deep) throws IOException {
         try (ZipOutputStream zos = new ZipOutputStream(out, StandardCharsets.UTF_8)) {
-            zip(sourceFile, zos, null, deep, ZipEntry.DEFLATED, null);
-        }
-    }
-
-    /**
-     * 压缩文件
-     * 
-     * @param sourceFile
-     *            要压缩的文件或目录
-     * @param out
-     *            指定压缩文件输出流
-     * @param deep
-     *            如果压缩一个目录，是否包含并压缩其子目录
-     * @param method
-     *            压缩方法，可以为 {@link ZipEntry.STORED} 或 {@link ZipEntry.DEFLATED}
-     * @throws IOException
-     */
-    public static void zip(File sourceFile, OutputStream out, boolean deep, int method) throws IOException {
-        try (ZipOutputStream zos = new ZipOutputStream(out, StandardCharsets.UTF_8)) {
-            zip(sourceFile, zos, null, deep, method, null);
+            return zip(sourceFile, zos, null, deep, ZipEntry.DEFLATED, null);
         }
     }
 
@@ -106,31 +91,13 @@ public class ZipUtils {
      *            如果压缩一个目录，是否包含并压缩其子目录
      * @param method
      *            压缩方法，可以为 {@link ZipEntry.STORED} 或 {@link ZipEntry.DEFLATED}
-     * @param zipRootDir
-     *            文件压缩到指定的根目录（a、a/b、a/b/c）
+     * @return 返回压缩包大小，略微小于实际大小
      * @throws IOException
      */
-    public static void zip(File sourceFile, OutputStream out, boolean deep, int method, String zipRootDir) throws IOException {
-        zip(sourceFile, out, deep, method, zipRootDir, null);
-    }
-
-    /**
-     * 压缩文件
-     * 
-     * @param sourceFile
-     *            要压缩的文件或目录
-     * @param out
-     *            指定压缩文件输出流
-     * @param deep
-     *            如果压缩一个目录，是否包含并压缩其子目录
-     * @param method
-     *            压缩方法，可以为 {@link ZipEntry.STORED} 或 {@link ZipEntry.DEFLATED}
-     * @param fileFilter
-     *            文件过滤器
-     * @throws IOException
-     */
-    public static void zip(File sourceFile, OutputStream out, boolean deep, int method, FileFilter fileFilter) throws IOException {
-        zip(sourceFile, out, deep, method, null, fileFilter);
+    public static long zip(File sourceFile, OutputStream out, boolean deep, int method) throws IOException {
+        try (ZipOutputStream zos = new ZipOutputStream(out, StandardCharsets.UTF_8)) {
+            return zip(sourceFile, zos, null, deep, method, null);
+        }
     }
 
     /**
@@ -146,13 +113,54 @@ public class ZipUtils {
      *            压缩方法，可以为 {@link ZipEntry.STORED} 或 {@link ZipEntry.DEFLATED}
      * @param zipRootDir
      *            文件压缩到指定的根目录（a、a/b、a/b/c）
-     * @param fileFilter
-     *            文件过滤器
+     * @return 返回压缩包大小，略微小于实际大小
      * @throws IOException
      */
-    public static void zip(File sourceFile, OutputStream out, boolean deep, int method, String zipRootDir, FileFilter fileFilter) throws IOException {
+    public static long zip(File sourceFile, OutputStream out, boolean deep, int method, String zipRootDir) throws IOException {
+        return zip(sourceFile, out, deep, method, zipRootDir, null);
+    }
+
+    /**
+     * 压缩文件
+     * 
+     * @param sourceFile
+     *            要压缩的文件或目录
+     * @param out
+     *            指定压缩文件输出流
+     * @param deep
+     *            如果压缩一个目录，是否包含并压缩其子目录
+     * @param method
+     *            压缩方法，可以为 {@link ZipEntry.STORED} 或 {@link ZipEntry.DEFLATED}
+     * @param fileFilter
+     *            文件过滤器
+     * @return 返回压缩包大小，略微小于实际大小
+     * @throws IOException
+     */
+    public static long zip(File sourceFile, OutputStream out, boolean deep, int method, FileFilter fileFilter) throws IOException {
+        return zip(sourceFile, out, deep, method, null, fileFilter);
+    }
+
+    /**
+     * 压缩文件
+     * 
+     * @param sourceFile
+     *            要压缩的文件或目录
+     * @param out
+     *            指定压缩文件输出流
+     * @param deep
+     *            如果压缩一个目录，是否包含并压缩其子目录
+     * @param method
+     *            压缩方法，可以为 {@link ZipEntry.STORED} 或 {@link ZipEntry.DEFLATED}
+     * @param zipRootDir
+     *            文件压缩到指定的根目录（a、a/b、a/b/c）
+     * @param fileFilter
+     *            文件过滤器
+     * @return 返回压缩包大小，略微小于实际大小
+     * @throws IOException
+     */
+    public static long zip(File sourceFile, OutputStream out, boolean deep, int method, String zipRootDir, FileFilter fileFilter) throws IOException {
         try (ZipOutputStream zos = new ZipOutputStream(out, StandardCharsets.UTF_8)) {
-            zip(sourceFile, zos, zipRootDir, deep, method, fileFilter);
+            return zip(sourceFile, zos, zipRootDir, deep, method, fileFilter);
         }
     }
 
@@ -163,11 +171,12 @@ public class ZipUtils {
      *            要压缩的文件或目录
      * @param zipFile
      *            指定压缩文件路径
+     * @return 返回压缩包大小，略微小于实际大小
      * @throws IOException
      */
-    public static void zip(File sourceFile, File zipFile) throws IOException {
+    public static long zip(File sourceFile, File zipFile) throws IOException {
         try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFile), StandardCharsets.UTF_8)) {
-            zip(sourceFile, zos, null, true, ZipEntry.DEFLATED, null);
+            return zip(sourceFile, zos, null, true, ZipEntry.DEFLATED, null);
         }
     }
 
@@ -180,11 +189,12 @@ public class ZipUtils {
      *            指定压缩文件路径
      * @param method
      *            压缩方法，可以为 {@link ZipEntry.STORED} 或 {@link ZipEntry.DEFLATED}
+     * @return 返回压缩包大小，略微小于实际大小
      * @throws IOException
      */
-    public static void zip(File sourceFile, File zipFile, int method) throws IOException {
+    public static long zip(File sourceFile, File zipFile, int method) throws IOException {
         try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFile), StandardCharsets.UTF_8)) {
-            zip(sourceFile, zos, null, true, method, null);
+            return zip(sourceFile, zos, null, true, method, null);
         }
     }
 
@@ -218,9 +228,11 @@ public class ZipUtils {
      *            压缩方法，可以为 {@link ZipEntry.STORED} 或 {@link ZipEntry.DEFLATED}
      * @param fileFilter
      *            文件过滤器
+     * @return 返回压缩包大小，略微小于实际大小
      * @throws Exception
      */
-    public static void zip(File sourceFile, ZipOutputStream zos, String zipRootDir, boolean deep, int method, FileFilter fileFilter) throws IOException {
+    public static long zip(File sourceFile, ZipOutputStream zos, String zipRootDir, boolean deep, int method, FileFilter fileFilter) throws IOException {
+        long length = 0;
         zipRootDir = StringUtils.isEmpty(zipRootDir) ? "" : zipRootDir;
         if (!sourceFile.isDirectory() && (fileFilter == null || fileFilter.accept(sourceFile))) {
             // 向zip输出流中添加一个zip实体，构造器中name为zip实体的文件的名字
@@ -241,6 +253,8 @@ public class ZipUtils {
             }
             // Complete the entry
             zos.closeEntry();
+            System.out.println(ze.getCompressedSize());
+            length += ze.getCompressedSize();
         } else {
             File[] listFiles = sourceFile.listFiles(fileFilter);
             if (listFiles == null || listFiles.length == 0) {
@@ -249,6 +263,8 @@ public class ZipUtils {
                 zos.putNextEntry(ze);
                 // 没有文件，不需要文件的copy
                 zos.closeEntry();
+                System.out.println(ze.getCompressedSize());
+                length += ze.getCompressedSize();
             } else {
                 for (File file : listFiles) {
                     if (!deep && file.isDirectory()) {
@@ -256,10 +272,12 @@ public class ZipUtils {
                     }
                     // 注意：file.getName()前面需要带上父文件夹的名字加一斜杠,
                     // 不然最后压缩包中就不能保留原来的文件结构,即：所有文件都跑到压缩包根目录下了
-                    zip(file, zos, zipRootDir.length() != 0 ? zipRootDir + "/" + file.getName() : file.getName(), deep, method, fileFilter);
+                    length += zip(file, zos, zipRootDir.length() != 0 ? zipRootDir + "/" + file.getName() : file.getName(), deep, method, fileFilter);
                 }
             }
         }
+        System.out.println(length);
+        return length;
     }
 
     private static void _unzip(ZipInputStream zis, String basePath) throws IOException {
@@ -314,5 +332,9 @@ public class ZipUtils {
         fi.close();
         checksum.close();
         return temp;
+    }
+
+    public static void main(String[] args) throws FileNotFoundException, IOException {
+        zip(new File("C:/Users/LY/Desktop/other"), new File("C:/Users/LY/Desktop/ot.zip"));
     }
 }

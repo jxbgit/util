@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -12,6 +13,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.jimlp.pay.weixin.sdk.WXPay;
 import com.jimlp.pay.weixin.sdk.WXPayConfig;
 import com.jimlp.pay.weixin.sdk.WXPayUtil;
@@ -25,12 +28,20 @@ public class Main {
     public static WXPayConfig configRelease = new WXPayConfigImpl();
     public static WXPayConfig config = configTest;
     public static void main(String[] args) throws Exception {
-        String fee = new BigDecimal("1.2").multiply(new BigDecimal(100)).toString();
-        int d = fee.indexOf(".");
-        if(d != -1){
-            fee = fee.substring(0, d);
+        String ignore = "[{\"dirName\":\"add\",\"fileNameLike\":[]},{\"dirName\":\"addd\",\"fileNameLike\":[\"wqed\",\"qdwe\"]}]";
+        if (ignore != null) {
+            try {
+                JSONArray ja = JSONArray.parseArray(ignore);
+                for (Object jo : ja) {
+                    String dirName = ((JSONObject) jo).getString("dirName");
+                    System.out.println(dirName);
+                    JSONArray fileNameLike = ((JSONObject) jo).getJSONArray("fileNameLike");
+                    System.out.println(Arrays.toString(fileNameLike.toArray(new String[0])));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-        System.out.println(fee);
         // wxpay();
         // orderquery();
         // wxpay();
@@ -38,7 +49,7 @@ public class Main {
         // wxpay();
         // downloadBill();
         // prop();
-//        concurrency();
+        concurrency();
     }
 
     @SuppressWarnings("unused")
@@ -100,23 +111,17 @@ public class Main {
 
     @SuppressWarnings("unused")
     private static void concurrency() throws Exception {
-        final LinkedBlockingQueue<String> queue = new LinkedBlockingQueue<>(9);
-        queue.put("13800138000");
-        int i = queue.size();
-        final CountDownLatch latch = new CountDownLatch(i);
-        Thread[] ts = new Thread[i];
-        while (--i >= 0) {
+        int cCount = 100;
+        int loopCount = 10;
+        final CountDownLatch latch = new CountDownLatch(cCount);
+        Thread[] ts = new Thread[cCount];
+        while (--cCount >= 0) {
             Thread t = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    Map<String, String> params = new HashMap<>();
-                    params.put("name", "SMS");
-                    params.put("target", queue.poll());
                     try {
-                        for (int j = 0; j < 2; j++) {
-                            params.put("msg", ""+Thread.currentThread().getId()+j);
-                            String rst = HttpUtils.doGet("http://localhost/MessageQueue/putMsg", params, "UTF-8");
-                            System.out.println(rst);
+                        for (int j = 0; j < loopCount; j++) {
+                            HttpUtils.doGet("http://java.appserver.com/Data/GetContent.hpo?password=1234567&system=0&captcha=4051&pageIndex=0&ip=218.68.147.59&USER_ID=0&pageSize=20&trigger=1DE0C2F5E4206484F248E69D5B28B86CCE0549C2D5FCECB7932D417DA3198CB09609591AE0DF0ACDCFDFF8AD2B9ACB600BC21F66ED8934D13ED6FB18B356B47BD3850A18A4C8B5608421D8ADF7D9F735DE40C062CDA2979C354397BA636F1E1BA5DC8D6FB5BA0AE5E137C16EA429F60C2556779B9C554012&oid=-999&lang=2&username=admin_aj");
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -125,7 +130,7 @@ public class Main {
                     }
                 }
             });
-            ts[i] = t;
+            ts[cCount] = t;
         }
         long now = System.currentTimeMillis();
         for (int j = 0, l = ts.length; j < l; j++) {
