@@ -37,7 +37,7 @@ public class JsonResult implements Serializable {
         this.code = code;
     }
 
-    public Object getMsg() {
+    public String getMsg() {
         return msg;
     }
 

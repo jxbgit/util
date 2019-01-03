@@ -7,7 +7,6 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -22,9 +21,6 @@ import org.xml.sax.SAXException;
 /**
  * 
  *
- * 修改时间 2018年10月10日下午6:13:10<br>
- * {@link Map} 实现从{@link HashMap}改用{@link IdentityHashMap}。支持重复子元素<br>
- * 
  * @author jxb
  *
  */
@@ -40,7 +36,7 @@ public class XmlUtils {
      * @throws DocumentException
      * @throws FileNotFoundException
      */
-    public static Map<String, Object> XmlToMap(File xmlFile) throws DocumentException, FileNotFoundException {
+    public static HashMap<String, Object> XmlToMap(File xmlFile) throws DocumentException, FileNotFoundException {
         return XmlToMap(new FileInputStream(xmlFile));
     }
 
@@ -53,7 +49,7 @@ public class XmlUtils {
      * @throws DocumentException
      * @throws FileNotFoundException
      */
-    public static Map<String, Object> XmlToMap(File xmlFile, String encoding) throws DocumentException, FileNotFoundException {
+    public static HashMap<String, Object> XmlToMap(File xmlFile, String encoding) throws DocumentException, FileNotFoundException {
         return XmlToMap(new FileInputStream(xmlFile), encoding);
     }
 
@@ -66,7 +62,7 @@ public class XmlUtils {
      * @throws DocumentException
      * @throws UnsupportedEncodingException
      */
-    public static Map<String, Object> XmlToMap(String xmlStr) throws DocumentException, UnsupportedEncodingException {
+    public static HashMap<String, Object> XmlToMap(String xmlStr) throws DocumentException, UnsupportedEncodingException {
         return XmlToMap(xmlStr, ENCODING);
     }
 
@@ -81,7 +77,7 @@ public class XmlUtils {
      * @throws DocumentException
      * @throws UnsupportedEncodingException
      */
-    public static Map<String, Object> XmlToMap(String xmlStr, String encoding) throws DocumentException, UnsupportedEncodingException {
+    public static HashMap<String, Object> XmlToMap(String xmlStr, String encoding) throws DocumentException, UnsupportedEncodingException {
         String _encoding = getEncoding(xmlStr);
         _encoding = _encoding == null ? encoding : _encoding;
         byte[] b = xmlStr.getBytes(_encoding);
@@ -96,7 +92,7 @@ public class XmlUtils {
      * @return
      * @throws DocumentException
      */
-    public static Map<String, Object> XmlToMap(InputStream inputStream) throws DocumentException {
+    public static HashMap<String, Object> XmlToMap(InputStream inputStream) throws DocumentException {
         return XmlToMap(inputStream, ENCODING);
     }
 
@@ -108,14 +104,13 @@ public class XmlUtils {
      * @return
      * @throws DocumentException
      */
-    public static Map<String, Object> XmlToMap(InputStream inputStream, String encoding) throws DocumentException {
-        Map<String, Object> map = new IdentityHashMap<String, Object>();
+    public static HashMap<String, Object> XmlToMap(InputStream inputStream, String encoding) throws DocumentException {
         SAXReader reader = new SAXReader();
         reader.setEncoding(encoding);
         setFeature(reader);
         Document doc = reader.read(inputStream);
         Element root = doc.getRootElement();
-        map = ElementToMap(root);
+        HashMap<String, Object> map = ElementToMap(root);
         return map;
     }
 
@@ -126,7 +121,7 @@ public class XmlUtils {
      * @return
      * @throws DocumentException
      */
-    public static Map<String, String> XmlToMapOnlyChild(InputStream inputStream) throws DocumentException {
+    public static HashMap<String, Object> XmlToMapOnlyChild(InputStream inputStream) throws DocumentException {
         return XmlToMapOnlyChild(inputStream, ENCODING);
     }
 
@@ -138,13 +133,13 @@ public class XmlUtils {
      * @return
      * @throws DocumentException
      */
-    public static Map<String, String> XmlToMapOnlyChild(InputStream inputStream, String encoding) throws DocumentException {
+    public static HashMap<String, Object> XmlToMapOnlyChild(InputStream inputStream, String encoding) throws DocumentException {
         SAXReader reader = new SAXReader();
         reader.setEncoding(encoding);
         setFeature(reader);
         Document doc = reader.read(inputStream);
         Element root = doc.getRootElement();
-        Map<String, String> map = ElementToMapOnlyChild(root);
+        HashMap<String, Object> map = ElementToMapOnlyChild(root);
         return map;
     }
 
@@ -154,8 +149,8 @@ public class XmlUtils {
      * @param ele
      * @return
      */
-    public static Map<String, String> ElementToMapOnlyChild(Element ele) {
-        Map<String, String> map = new IdentityHashMap<>();
+    public static HashMap<String, Object> ElementToMapOnlyChild(Element ele) {
+    	HashMap<String, Object> map = new HashMap<>();
         @SuppressWarnings("unchecked")
         List<Element> eleList = ele.elements();
         int size = eleList.size();
@@ -175,18 +170,18 @@ public class XmlUtils {
      * @param ele
      * @return
      */
-    public static Map<String, Object> ElementToMap(Element ele) {
-        Map<String, Object> map = new IdentityHashMap<>();
+    public static HashMap<String, Object> ElementToMap(Element ele) {
+    	HashMap<String, Object> map = new HashMap<>();
         @SuppressWarnings("unchecked")
         List<Element> eleList = ele.elements();
-        String name = new String(ele.getName());
+        String name = ele.getName();
         int size = eleList.size();
         if (size == 0) {
             map.put(name, ele.getTextTrim());
             return map;
         }
 
-        Map<String, Object> childMap = new IdentityHashMap<>();
+        Map<String, Object> childMap = new HashMap<>();
         for (Iterator<Element> iter = eleList.iterator(); iter.hasNext();) {
             Element innerEle = iter.next();
             childMap.putAll(ElementToMap(innerEle));
