@@ -36,7 +36,7 @@ public final class StringUtils {
 	}
 
 	/**
-	 * 检查指定的字符串是否存在空值。
+	 * 检查指定的字符串列表是否存在空值。
 	 * <ul>
 	 * <li>SysUtils.isEmpty(null) = true</li>
 	 * <li>SysUtils.isEmpty("") = true</li>
@@ -48,7 +48,7 @@ public final class StringUtils {
 	 *            待检查的字符串
 	 * @return true/false
 	 */
-	public static boolean haveEmpty(String... values) {
+	public static boolean containsEmpty(String... values) {
 		int l = values.length;
 		for (int i = 0; i < l; i++) {
 			if (isEmpty(values[i])) {
@@ -59,7 +59,7 @@ public final class StringUtils {
 	}
 
 	/**
-	 * 检查指定的字符串是否全部为空值。
+	 * 检查指定的字符串列表是否全部为空值。
 	 * <ul>
 	 * <li>SysUtils.isEmpty(null) = true</li>
 	 * <li>SysUtils.isEmpty("") = true</li>
@@ -96,7 +96,7 @@ public final class StringUtils {
 	}
 
 	/**
-	 * 把名称转换为小写加下划线的形式。
+	 * 驼峰 转 下划线小写形式。
 	 */
 	public static String toUnderlineStyle(String name) {
 		StringBuilder newName = new StringBuilder();
@@ -116,18 +116,27 @@ public final class StringUtils {
 	}
 
 	/**
-	 * 把名称转换为首字母小写的驼峰形式。
+	 * 下划线 转 驼峰形式。
 	 */
 	public static String toCamelStyle(String name) {
 		StringBuilder newName = new StringBuilder();
 		int len = name.length();
+		boolean up = false;
 		for (int i = 0; i < len; i++) {
 			char c = name.charAt(i);
-			if (i == 0) {
-				newName.append(Character.toLowerCase(c));
-			} else {
-				newName.append(c);
+			if (c == '_') {
+				if(i > 0) {
+					up = true;
+				}
+				continue;
 			}
+			if (up) {
+				c = Character.toUpperCase(c);
+				up = false;
+			} else {
+				c = Character.toLowerCase(c);
+			}
+			newName.append(c);
 		}
 		return newName.toString();
 	}

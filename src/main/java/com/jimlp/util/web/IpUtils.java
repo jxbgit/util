@@ -195,14 +195,14 @@ public final class IpUtils {
                 // 210.25.0.0-210.47.255.255
                 { -770113536, -768606209 },
                 // 222.16.0.0-222.95.255.255
-                { -569376768, -564133889 }, };
+                { -569376768, -564133889 } };
 
         Random r = new Random();
         int i = r.nextInt(10);
         int ipInt = range[i][0];
         int add = range[i][1] - range[i][0];
         ipInt += r.nextInt(add);
-        String ip = long2Ip(ipInt);
+        String ip = parseStrIp(ipInt);
         return ip;
     }
 
@@ -215,7 +215,7 @@ public final class IpUtils {
      * @param ip
      * @return
      */
-    public static long ip2Long(String ip) {
+    public static long parseLongIp(String ip) {
         String[] parts = ip.split("\\.");
         long l = 0;
         l += Long.parseLong(parts[0]) << 24;
@@ -234,7 +234,7 @@ public final class IpUtils {
      * @param ip
      * @return
      */
-    public static int ip2Int(String ip) {
+    public static int parseIntIp(String ip) {
         String[] parts = ip.split("\\.");
         int i = 0;
         i += Integer.parseInt(parts[0]) << 24;
@@ -250,7 +250,7 @@ public final class IpUtils {
      * @param num
      * @return
      */
-    public static String long2Ip(long num) {
+    public static String parseStrIp(long num) {
         int[] b = new int[4];
         b[0] = (int) ((num >> 24) & 0xff);
         b[1] = (int) ((num >> 16) & 0xff);
