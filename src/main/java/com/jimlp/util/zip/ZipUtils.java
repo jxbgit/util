@@ -253,7 +253,6 @@ public class ZipUtils {
             }
             // Complete the entry
             zos.closeEntry();
-            System.out.println(ze.getCompressedSize());
             length += ze.getCompressedSize();
         } else {
             File[] listFiles = sourceFile.listFiles(fileFilter);
@@ -263,7 +262,6 @@ public class ZipUtils {
                 zos.putNextEntry(ze);
                 // 没有文件，不需要文件的copy
                 zos.closeEntry();
-                System.out.println(ze.getCompressedSize());
                 length += ze.getCompressedSize();
             } else {
                 for (File file : listFiles) {
@@ -276,7 +274,6 @@ public class ZipUtils {
                 }
             }
         }
-        System.out.println(length);
         return length;
     }
 

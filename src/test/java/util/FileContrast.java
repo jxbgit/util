@@ -1,7 +1,8 @@
 package util;
 
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 
 /**
@@ -14,12 +15,12 @@ import java.io.LineNumberReader;
  */
 public class FileContrast {
     public static void main(String[] args) throws Exception {
-        String fp1 = "C:/Users/LY/Desktop/SQL.log";
-        String fp2 = "C:/Users/LY/Desktop/1.log";
+        String fp1 = "C:/Users/LY/Desktop/SQL_20181228.log";
+        String fp2 = "C:/Users/LY/Desktop/SQL_20181228s.log";
         File f1 = new File(fp1);
         File f2 = new File(fp2);
-        LineNumberReader l1 = new LineNumberReader(new FileReader(f1));
-        LineNumberReader l2 = new LineNumberReader(new FileReader(f2));
+        LineNumberReader l1 = new LineNumberReader(new InputStreamReader(new FileInputStream(f1),"UTF-8"));
+        LineNumberReader l2 = new LineNumberReader(new InputStreamReader(new FileInputStream(f2),"GB2312"));
         String line = null;
         String line2 = null;
         String pLine = null;
