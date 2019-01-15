@@ -89,11 +89,8 @@ function include() {
             },
             complete : function(XHR, TS) {
 				// 请求完成后回调函数 (请求成功或失败之后均调用)。
-            	if (XHR.status===302){  
-                    var url = XHR.responseText.match(/\'([^,])*\'/g)[0]+"";
-                    if(url.length > 2){
-                    	url = url.substring(1, url.length-1);
-                    }
+            	if (XHR.getResponseHeader("Redirect") == "Redirect"){  
+                    var url = XHR.getResponseHeader("Location");
                     window.open(url, '_top');
             	}else{  
                     callback.complete(XHR, TS);
@@ -609,8 +606,8 @@ function showMessage(data) {
 
 	var message = data.message;
 	var messageLength = message.length;
-	var fontSize = data.size != undefined ? data.size : 20;
-	var messageTop = data.top != undefined ? data.top : h / 3;
+	var fontSize = data.size != undefined ? data.size : 16;
+	var messageTop = data.top != undefined ? data.top : 0;
 	var showTime = data.time != undefined ? data.time : 2000;
 
 	var time2 = 500;// 动画时长
@@ -625,7 +622,7 @@ function showMessage(data) {
 		"top" : messageTop + "px",
 		"background-color" : "rgba(0, 153, 255, 0.8)",
 		"color" : "white",
-		"border-radius" : "5px",
+		"border-radius" : "3px",
 		"font-size" : fontSize + "px",
 		"padding" : fontSize / 4 + "px",
 		"z-index" : "9999999",
