@@ -86,7 +86,7 @@ public class WXPayRequest {
     }
 
     private static String request(String urlSuffix, String uuid, String data, int connectTimeoutMs, int readTimeoutMs, boolean useCert, WXPayConfig config) throws Exception {
-        WXPayDomain.DomainInfo domainInfo = WXPayDomain.getDomain();
+        WXPayDomain.DomainInfo domainInfo = WXPayDomain.getDomain(config);
         if (domainInfo == null) {
             throw new Exception("WXPayConfig.getWXPayDomain().getDomain() is empty or null");
         }
