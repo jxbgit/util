@@ -21,7 +21,6 @@ import javax.mail.Multipart;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
-import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
@@ -110,16 +109,17 @@ public final class MailSender {
 	 * @throws MessagingException
 	 */
 	public void setRecipients(String[] to) throws MessagingException {
-		if (to == null) {
-			throw new AddressException("收件地址为空");
+		Address[] addresses = null;
+		if (to != null) {
+			int length = to.length;
+			if (to.length > 0) {
+				addresses = new Address[length];
+				for (int i = 0; i < length; i++) {
+					addresses[i] = new InternetAddress(to[i]);
+				}
+			}
 		}
-		// 收件地址
-		int length = to.length;
-		Address[] addresses = new Address[length];
-		for (int i = 0; i < length; i++) {
-			addresses[i] = new InternetAddress(to[i]);
-		}
-		this.mimeMessage.addRecipients(Message.RecipientType.TO, addresses);
+		this.mimeMessage.setRecipients(Message.RecipientType.TO, addresses);
 	}
 
 	/**
